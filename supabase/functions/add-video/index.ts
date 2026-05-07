@@ -13,7 +13,7 @@ Deno.serve(async (req) => {
     const youtubeId = extractYoutubeId(url)
 
     const YOUTUBE_API_KEY = Deno.env.get('YOUTUBE_API_KEY')!
-    const GEMINI_API_KEY = Deno.env.get('GEMINI_API_KEY')!
+    const GROQ_API_KEY = Deno.env.get('GROQ_API_KEY')!
     const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!
     const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
 
@@ -31,41 +31,25 @@ Deno.serve(async (req) => {
 
     const snippet = ytData.items[0].snippet
 
-    const geminiRes = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent?key=${GEMINI_API_KEY}`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: [{
-            parts: [{
-              text: `以下のYouTube動画を日本語で分析してください。\nタイトル: ${snippet.title}\n説明: ${snippet.description?.substring(0, 800) || ''}\n\n以下のJSON形式のみで回答してください（他のテキスト不要）：\n{"category":"カテゴリ（技術/料理/音楽/ゲーム/教育/ニュース/エンタメ/スポーツ/ビジネス/健康/旅行/その他）","summary":"100文字程度の日本語要約"}`
-            }]
-          }],
-          generationConfig: { temperature: 0.3 },
-        }),
-      }
-    )
-    const geminiData = await geminiRes.json()
-    const rawText = geminiData.candidates[0].content.parts[0].text.trim()
+    const groqRes = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${GROQ_API_KEY}`,
+      },
+      body: JSON.stringify({
+        model: 'llama-3.1-8b-instant',
+        messages: [{
+          role: 'user',
+          content: `以下のYouTube動画を日本語で分析してください。\nタイトル: ${snippet.title}\n説明: ${snippet.description?.substring(0, 800) || ''}\n\n以下のJSON形式のみで回答してください（他のテキスト不要）：\n{"category":"カテゴリ（技術/料理/音楽/ゲーム/教育/ニュース/エンタメ/スポーツ/ビジネス/健康/旅行/その他）","summary":"100文字程度の日本語要約"}`,
+        }],
+        temperature: 0.3,
+      }),
+    })
+    const groqData = await groqRes.json()
+    const rawText = groqData.choices[0].message.content.trim()
     const jsonMatch = rawText.match(/\{[\s\S]*\}/)
     const { category, summary } = JSON.parse(jsonMatch![0])
-
-    const embedRes = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/text-embedding-004:embedContent?key=${GEMINI_API_KEY}`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          model: 'models/text-embedding-004',
-          content: {
-            parts: [{ text: `${snippet.title} ${summary} ${(snippet.tags || []).join(' ')}` }],
-          },
-        }),
-      }
-    )
-    const embedData = await embedRes.json()
-    const embedding = embedData.embedding.values
 
     const dbRes = await fetch(`${SUPABASE_URL}/rest/v1/videos`, {
       method: 'POST',
@@ -85,7 +69,6 @@ Deno.serve(async (req) => {
         tags: snippet.tags || [],
         category,
         summary,
-        embedding: `[${embedding.join(',')}]`,
       }),
     })
 
