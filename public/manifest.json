@@ -1,0 +1,9 @@
+{
+  "name": "MyYoutubeIndex",
+  "short_name": "YTIndex",
+  "description": "YouTube動画をAIで整理・検索",
+  "start_url": "/MyYoutubeIndex/",
+  "display": "standalone",
+  "background_color": "#f9fafb",
+  "theme_color": "#ef4444"
+}
