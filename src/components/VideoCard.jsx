@@ -9,7 +9,7 @@ const categoryColors = {
   'スポーツ': 'bg-teal-100 text-teal-700',
   'ビジネス': 'bg-indigo-100 text-indigo-700',
   'マーケティング・営業': 'bg-indigo-100 text-indigo-700',
-  '投賄・金融': 'bg-emerald-100 text-emerald-700',
+  '投資・金融': 'bg-emerald-100 text-emerald-700',
   '経営・戦略': 'bg-violet-100 text-violet-700',
   'キャリア・自己啓発': 'bg-amber-100 text-amber-700',
   '起業・スタートアップ': 'bg-rose-100 text-rose-700',
