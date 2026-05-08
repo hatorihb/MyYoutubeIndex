@@ -14,6 +14,7 @@ export default function App() {
   const [searching, setSearching] = useState(false)
   const [isSearchMode, setIsSearchMode] = useState(false)
   const [selectedCategory, setSelectedCategory] = useState(null)
+  const [sortAscending, setSortAscending] = useState(false)
 
   const loadVideos = useCallback(async () => {
     setLoading(true)
@@ -34,9 +35,10 @@ export default function App() {
 
   const displayedVideos = useMemo(() => {
     if (isSearchMode) return searchResults
-    if (selectedCategory) return videos.filter(v => v.category === selectedCategory)
-    return videos
-  }, [isSearchMode, searchResults, selectedCategory, videos])
+    const base = selectedCategory ? videos.filter(v => v.category === selectedCategory) : videos
+    if (sortAscending) return [...base].reverse()
+    return base
+  }, [isSearchMode, searchResults, selectedCategory, videos, sortAscending])
 
   const handleSearch = async (e) => {
     e.preventDefault()
@@ -77,6 +79,17 @@ export default function App() {
             </div>
             <h1 className="text-lg font-bold text-gray-900">MyYoutubeIndex</h1>
             <span className="ml-auto text-xs text-gray-400">{videos.length}本</span>
+            {!isSearchMode && (
+              <button
+                onClick={() => setSortAscending(v => !v)}
+                className="flex items-center gap-1 text-xs text-gray-500 hover:text-gray-700"
+              >
+                <svg className={`w-3.5 h-3.5 transition-transform ${sortAscending ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4h13M3 8h9M3 12h5m8 0l4-4m0 0l4 4m-4-4v12" />
+                </svg>
+                {sortAscending ? '古い順' : '新しい順'}
+              </button>
+            )}
           </div>
 
           <form onSubmit={handleSearch} className="flex gap-2 mb-2">
