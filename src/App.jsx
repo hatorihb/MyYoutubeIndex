@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { supabase } from './lib/supabase'
 import VideoCard from './components/VideoCard'
 import AddVideoModal from './components/AddVideoModal'
@@ -6,13 +6,14 @@ import VideoDetailModal from './components/VideoDetailModal'
 
 export default function App() {
   const [videos, setVideos] = useState([])
-  const [displayedVideos, setDisplayedVideos] = useState([])
+  const [searchResults, setSearchResults] = useState([])
   const [selectedVideo, setSelectedVideo] = useState(null)
   const [showAddModal, setShowAddModal] = useState(false)
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
   const [searching, setSearching] = useState(false)
   const [isSearchMode, setIsSearchMode] = useState(false)
+  const [selectedCategory, setSelectedCategory] = useState(null)
 
   const loadVideos = useCallback(async () => {
     setLoading(true)
@@ -21,37 +22,46 @@ export default function App() {
       .select('*')
       .order('created_at', { ascending: false })
     setVideos(data || [])
-    setDisplayedVideos(data || [])
     setLoading(false)
   }, [])
 
   useEffect(() => { loadVideos() }, [loadVideos])
 
+  const categories = useMemo(() =>
+    [...new Set(videos.map(v => v.category).filter(Boolean))].sort(),
+    [videos]
+  )
+
+  const displayedVideos = useMemo(() => {
+    if (isSearchMode) return searchResults
+    if (selectedCategory) return videos.filter(v => v.category === selectedCategory)
+    return videos
+  }, [isSearchMode, searchResults, selectedCategory, videos])
+
   const handleSearch = async (e) => {
     e.preventDefault()
     if (!searchQuery.trim()) {
       setIsSearchMode(false)
-      setDisplayedVideos(videos)
       return
     }
     setSearching(true)
     setIsSearchMode(true)
+    setSelectedCategory(null)
     const { data } = await supabase.functions.invoke('search-videos', {
       body: { query: searchQuery },
     })
-    setDisplayedVideos(data || [])
+    setSearchResults(data || [])
     setSearching(false)
   }
 
   const handleClearSearch = () => {
     setSearchQuery('')
     setIsSearchMode(false)
-    setDisplayedVideos(videos)
+    setSearchResults([])
   }
 
   const handleVideoAdded = (video) => {
     setVideos(prev => [video, ...prev])
-    if (!isSearchMode) setDisplayedVideos(prev => [video, ...prev])
     setShowAddModal(false)
   }
 
@@ -68,13 +78,14 @@ export default function App() {
             <h1 className="text-lg font-bold text-gray-900">MyYoutubeIndex</h1>
             <span className="ml-auto text-xs text-gray-400">{videos.length}本</span>
           </div>
-          <form onSubmit={handleSearch} className="flex gap-2">
+
+          <form onSubmit={handleSearch} className="flex gap-2 mb-2">
             <div className="relative flex-1">
               <input
                 type="text"
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
-                placeholder="自然言語で検索（例：Pythonの機械学習）"
+                placeholder="キーワードで検索"
                 className="w-full pl-9 pr-8 py-2 bg-gray-100 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-red-400"
               />
               <svg className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -96,14 +107,39 @@ export default function App() {
               {searching ? '...' : '検索'}
             </button>
           </form>
+
+          {!isSearchMode && categories.length > 0 && (
+            <div className="flex gap-2 overflow-x-auto pb-1 -mx-4 px-4" style={{scrollbarWidth: 'none', msOverflowStyle: 'none'}}>
+              <button
+                onClick={() => setSelectedCategory(null)}
+                className={`flex-shrink-0 px-3 py-1 rounded-full text-xs font-medium transition-colors ${
+                  selectedCategory === null ? 'bg-red-500 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                }`}
+              >
+                すべて
+              </button>
+              {categories.map(cat => (
+                <button
+                  key={cat}
+                  onClick={() => setSelectedCategory(cat)}
+                  className={`flex-shrink-0 px-3 py-1 rounded-full text-xs font-medium transition-colors ${
+                    selectedCategory === cat ? 'bg-red-500 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  }`}
+                >
+                  {cat}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
       </header>
 
       <main className="max-w-4xl mx-auto px-4 py-4 pb-24">
         {isSearchMode && (
-          <p className="text-sm text-gray-500 mb-3">
-            「{searchQuery}」— {displayedVideos.length}件
-          </p>
+          <p className="text-sm text-gray-500 mb-3">「{searchQuery}」— {displayedVideos.length}件</p>
+        )}
+        {!isSearchMode && selectedCategory && (
+          <p className="text-sm text-gray-500 mb-3">{selectedCategory} — {displayedVideos.length}件</p>
         )}
 
         {loading ? (
@@ -115,8 +151,10 @@ export default function App() {
             <svg className="w-16 h-16 mx-auto mb-4 opacity-30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M15 10l4.553-2.069A1 1 0 0121 8.82v6.36a1 1 0 01-1.447.894L15 14M3 8a2 2 0 012-2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8z" />
             </svg>
-            <p className="font-medium">{isSearchMode ? '該当する動画がありません' : '動画がありません'}</p>
-            {!isSearchMode && <p className="text-sm mt-1">下の＋ボタンから追加しましょう</p>}
+            <p className="font-medium">
+              {isSearchMode ? '該当する動画がありません' : selectedCategory ? `${selectedCategory}の動画がありません` : '動画がありません'}
+            </p>
+            {!isSearchMode && !selectedCategory && <p className="text-sm mt-1">下の＋ボタンから追加しましょう</p>}
           </div>
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
