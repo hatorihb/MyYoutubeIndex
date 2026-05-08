@@ -179,7 +179,11 @@ export default function App() {
         <AddVideoModal onClose={() => setShowAddModal(false)} onAdded={handleVideoAdded} />
       )}
       {selectedVideo && (
-        <VideoDetailModal video={selectedVideo} onClose={() => setSelectedVideo(null)} />
+        <VideoDetailModal
+          video={selectedVideo}
+          onClose={() => setSelectedVideo(null)}
+          onDeleted={() => { setSelectedVideo(null); loadVideos() }}
+        />
       )}
     </div>
   )
