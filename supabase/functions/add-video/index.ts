@@ -41,7 +41,7 @@ Deno.serve(async (req) => {
         model: 'llama-3.1-8b-instant',
         messages: [{
           role: 'user',
-          content: `以下のYouTube動画を日本語で分析してください。\nタイトル: ${snippet.title}\n説明: ${snippet.description?.substring(0, 800) || ''}\n\n以下のJSON形式のみで回答してください（他のテキスト不要）：\n{"category":"カテゴリ（技術/料理/音楽/ゲーム/教育/ニュース/エンタメ/スポーツ/マーケティング・営業/投資・金融/経営・戦略/キャリア・自己啓発/起業・スタートアップ/健康/旅行/その他）","summary":"100文字程度の日本語要約"}`,
+          content: `以下のYouTube動画を日本語で分析してください。\nタイトル: ${snippet.title}\n説明: ${snippet.description?.substring(0, 800) || ''}\n\n以下のJSON形式のみで回答してください（他のテキスト不要）：\n{"category":"カテゴリ（技術/料理/音楽/ゲーム/教育/ニュース/エンタメ/スポーツ/マーケティング・営業/投資・金融/経営・戦略/キャリア・自己問発/起業・スタートアップ/健康/旅行/AI時代を考える/AI tech/AI他社状況/AI関連（TBS CRSS DIG）/AIニュース（いけともch）/AI1人起業/Claude関連/Claude Codeによるアプリ開発/Claude Design関連/GitHub関連/業務プロセス変革/人生観/ビジネススキル/リーダーシップ・マネジメント/キャリア関連/リベラルアーツ関連/教養関連/メンタル関連/育成関連/時事ネタ/その他）","summary":"100文字程度の日本語要約"}`,
         }],
         temperature: 0.3,
       }),
