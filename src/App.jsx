@@ -60,8 +60,8 @@ export default function App() {
     setSearchResults([])
   }
 
-  const handleVideoAdded = (video) => {
-    setVideos(prev => [video, ...prev])
+  const handleVideoAdded = () => {
+    loadVideos()
     setShowAddModal(false)
   }
 
