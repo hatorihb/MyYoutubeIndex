@@ -13,7 +13,7 @@ export default function App() {
   const [searchQuery, setSearchQuery] = useState('')
   const [searching, setSearching] = useState(false)
   const [isSearchMode, setIsSearchMode] = useState(false)
-  const [selectedCategory, setSelectedCategory] = useState(null)
+  const [selectedCategories, setSelectedCategories] = useState(new Set())
   const [sortAscending, setSortAscending] = useState(false)
 
   const loadVideos = useCallback(async () => {
@@ -35,10 +35,10 @@ export default function App() {
 
   const displayedVideos = useMemo(() => {
     if (isSearchMode) return searchResults
-    const base = selectedCategory ? videos.filter(v => v.category === selectedCategory) : videos
+    const base = selectedCategories.size > 0 ? videos.filter(v => selectedCategories.has(v.category)) : videos
     if (sortAscending) return [...base].reverse()
     return base
-  }, [isSearchMode, searchResults, selectedCategory, videos, sortAscending])
+  }, [isSearchMode, searchResults, selectedCategories, videos, sortAscending])
 
   const handleSearch = async (e) => {
     e.preventDefault()
@@ -48,7 +48,7 @@ export default function App() {
     }
     setSearching(true)
     setIsSearchMode(true)
-    setSelectedCategory(null)
+    setSelectedCategories(new Set())
     const { data } = await supabase.functions.invoke('search-videos', {
       body: { query: searchQuery },
     })
@@ -99,7 +99,8 @@ export default function App() {
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
                 placeholder="キーワードで検索"
-                className="w-full pl-9 pr-8 py-2 bg-gray-100 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-red-400"
+                className="w-full pl-9 pr-8 py-2 bg-gray-100 rounded-full focus:outline-none focus:ring-2 focus:ring-red-400"
+                style={{fontSize: '16px'}}
               />
               <svg className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -124,9 +125,9 @@ export default function App() {
           {!isSearchMode && categories.length > 0 && (
             <div className="flex gap-2 overflow-x-auto pb-1 -mx-4 px-4" style={{scrollbarWidth: 'none', msOverflowStyle: 'none'}}>
               <button
-                onClick={() => setSelectedCategory(null)}
+                onClick={() => setSelectedCategories(new Set())}
                 className={`flex-shrink-0 px-3 py-1 rounded-full text-xs font-medium transition-colors ${
-                  selectedCategory === null ? 'bg-red-500 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  selectedCategories.size === 0 ? 'bg-red-500 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                 }`}
               >
                 すべて
@@ -134,9 +135,13 @@ export default function App() {
               {categories.map(cat => (
                 <button
                   key={cat}
-                  onClick={() => setSelectedCategory(cat)}
+                  onClick={() => setSelectedCategories(prev => {
+                    const next = new Set(prev)
+                    next.has(cat) ? next.delete(cat) : next.add(cat)
+                    return next
+                  })}
                   className={`flex-shrink-0 px-3 py-1 rounded-full text-xs font-medium transition-colors ${
-                    selectedCategory === cat ? 'bg-red-500 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                    selectedCategories.has(cat) ? 'bg-red-500 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                   }`}
                 >
                   {cat}
@@ -151,8 +156,8 @@ export default function App() {
         {isSearchMode && (
           <p className="text-sm text-gray-500 mb-3">「{searchQuery}」— {displayedVideos.length}件</p>
         )}
-        {!isSearchMode && selectedCategory && (
-          <p className="text-sm text-gray-500 mb-3">{selectedCategory} — {displayedVideos.length}件</p>
+        {!isSearchMode && selectedCategories.size > 0 && (
+          <p className="text-sm text-gray-500 mb-3">{[...selectedCategories].join('・')} — {displayedVideos.length}件</p>
         )}
 
         {loading ? (
@@ -165,9 +170,9 @@ export default function App() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M15 10l4.553-2.069A1 1 0 0121 8.82v6.36a1 1 0 01-1.447.894L15 14M3 8a2 2 0 012-2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8z" />
             </svg>
             <p className="font-medium">
-              {isSearchMode ? '該当する動画がありません' : selectedCategory ? `${selectedCategory}の動画がありません` : '動画がありません'}
+              {isSearchMode ? '該当する動画がありません' : selectedCategories.size > 0 ? '該当する動画がありません' : '動画がありません'}
             </p>
-            {!isSearchMode && !selectedCategory && <p className="text-sm mt-1">下の＋ボタンから追加しましょう</p>}
+            {!isSearchMode && selectedCategories.size === 0 && <p className="text-sm mt-1">下の＋ボタンから追加しましょう</p>}
           </div>
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
