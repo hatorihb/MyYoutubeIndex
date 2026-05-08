@@ -1,6 +1,12 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
 
+const CATEGORIES = [
+  '技術', '料理', '音楽', 'ゲーム', '教育', 'ニュース', 'エンタメ', 'スポーツ',
+  'マーケティング・営業', '投資・金融', '経営・戦略', 'キャリア・自己問発',
+  '起業・スタートアップ', '健康', '旅行', 'その他',
+]
+
 const fileIcon = (type) => {
   if (type === 'pdf') return '📄'
   if (['pptx', 'ppt'].includes(type)) return '📊'
@@ -10,11 +16,19 @@ const fileIcon = (type) => {
 export default function VideoDetailModal({ video, onClose, onDeleted }) {
   const [files, setFiles] = useState([])
   const [uploading, setUploading] = useState(false)
+  const [category, setCategory] = useState(video.category || '')
+  const [editingCategory, setEditingCategory] = useState(false)
 
   const handleDelete = async () => {
     if (!confirm(`「${video.title}」を削除しますか？`)) return
     await supabase.from('videos').delete().eq('id', video.id)
     onDeleted()
+  }
+
+  const handleCategoryChange = async (newCategory) => {
+    setCategory(newCategory)
+    setEditingCategory(false)
+    await supabase.from('videos').update({ category: newCategory }).eq('id', video.id)
   }
 
   useEffect(() => {
@@ -102,11 +116,31 @@ export default function VideoDetailModal({ video, onClose, onDeleted }) {
           <h2 className="text-base font-bold text-gray-900 mb-1 leading-snug">{video.title}</h2>
           <p className="text-sm text-gray-500 mb-3">{video.channel}</p>
 
-          {video.category && (
-            <span className="inline-block bg-red-100 text-red-700 text-xs px-2 py-1 rounded-full mb-3 font-medium">
-              {video.category}
-            </span>
-          )}
+          <div className="mb-3">
+            {editingCategory ? (
+              <select
+                autoFocus
+                value={category}
+                onChange={e => handleCategoryChange(e.target.value)}
+                onBlur={() => setEditingCategory(false)}
+                className="text-xs border border-red-300 rounded-full px-3 py-1 text-red-700 bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-400"
+              >
+                {CATEGORIES.map(cat => (
+                  <option key={cat} value={cat}>{cat}</option>
+                ))}
+              </select>
+            ) : (
+              <button
+                onClick={() => setEditingCategory(true)}
+                className="inline-flex items-center gap-1 bg-red-100 text-red-700 text-xs px-2 py-1 rounded-full font-medium hover:bg-red-200"
+              >
+                {category || 'カテゴリなし'}
+                <svg className="w-3 h-3 opacity-60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536M9 13l6.586-6.586a2 2 0 112.828 2.828L11.828 15.828a2 2 0 01-1.414.586H8v-2.414a2 2 0 01.586-1.414z" />
+                </svg>
+              </button>
+            )}
+          </div>
 
           {video.summary && (
             <div className="bg-gray-50 rounded-xl p-3 mb-4">
