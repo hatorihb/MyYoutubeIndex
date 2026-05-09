@@ -206,6 +206,10 @@ export default function App() {
           video={selectedVideo}
           onClose={() => setSelectedVideo(null)}
           onDeleted={() => { setSelectedVideo(null); loadVideos() }}
+          onCategoryChanged={(cat) => {
+            setSelectedVideo(v => ({ ...v, category: cat }))
+            loadVideos()
+          }}
         />
       )}
     </div>
