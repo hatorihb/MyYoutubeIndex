@@ -3,7 +3,7 @@ import { supabase } from '../lib/supabase'
 
 const CATEGORIES = [
   '技術', '料理', '音楽', 'ゲーム', '教育', 'ニュース', 'エンタメ', 'スポーツ',
-  'マーケティング・営業', '投資・金融', '経営・戦略', 'キャリア・自己問発',
+  'マーケティング・営業', '投資・金融', '経営・戦略', 'キャリア・自己啓発',
   '起業・スタートアップ', '健康', '旅行',
   'AI時代を考える', 'AI tech', 'AI他社状況', 'AI関連（TBS CRSS DIG）',
   'AIニュース（いけともch）', 'AI1人起業',
@@ -55,8 +55,9 @@ export default function VideoDetailModal({ video, onClose, onDeleted, onCategory
     const selected = Array.from(e.target.files)
     if (!selected.length) return
     setUploading(true)
-    for (const file of selected) {
-      const fileName = `${video.id}/${Date.now()}_${file.name}`
+    for (let i = 0; i < selected.length; i++) {
+      const file = selected[i]
+      const fileName = `${video.id}/${Date.now()}_${i}_${file.name}`
       const { data: storageData, error: storageErr } = await supabase.storage
         .from('notebooks')
         .upload(fileName, file)

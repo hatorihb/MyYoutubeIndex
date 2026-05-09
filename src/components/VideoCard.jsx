@@ -11,7 +11,7 @@ const categoryColors = {
   'マーケティング・営業': 'bg-indigo-100 text-indigo-700',
   '投資・金融': 'bg-emerald-100 text-emerald-700',
   '経営・戦略': 'bg-violet-100 text-violet-700',
-  'キャリア・自己問発': 'bg-amber-100 text-amber-700',
+  'キャリア・自己啓発': 'bg-amber-100 text-amber-700',
   '起業・スタートアップ': 'bg-rose-100 text-rose-700',
   '健康': 'bg-lime-100 text-lime-700',
   '旅行': 'bg-cyan-100 text-cyan-700',
