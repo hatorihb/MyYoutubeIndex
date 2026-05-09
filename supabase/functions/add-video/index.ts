@@ -9,7 +9,7 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { url } = await req.json()
+    const { url, category: manualCategory } = await req.json()
     const youtubeId = extractYoutubeId(url)
 
     const YOUTUBE_API_KEY = Deno.env.get('YOUTUBE_API_KEY')!
@@ -31,6 +31,10 @@ Deno.serve(async (req) => {
 
     const snippet = ytData.items[0].snippet
 
+    const groqPrompt = manualCategory
+      ? `以下のYouTube動画を日本語で分析してください。\nタイトル: ${snippet.title}\n説明: ${snippet.description?.substring(0, 800) || ''}\n\n以下のJSON形式のみで回答してください（他のテキスト不要）：\n{"summary":"100文字程度の日本語要約"}`
+      : `以下のYouTube動画を日本語で分析してください。\nタイトル: ${snippet.title}\n説明: ${snippet.description?.substring(0, 800) || ''}\n\n以下のJSON形式のみで回答してください（他のテキスト不要）：\n{"category":"カテゴリ（技術/料理/音楽/ゲーム/教育/ニュース/エンタメ/スポーツ/マーケティング・営業/投資・金融/経営・戦略/キャリア・自己問発/起業・スタートアップ/健康/旅行/AI時代を考える/AI tech/AI他社状況/AI関連（TBS CRSS DIG）/AIニュース（いけともch）/AI1人起業/Claude関連/Claude Codeによるアプリ開発/Claude Design関連/GitHub関連/業務プロセス変革/人生観/ビジネススキル/リーダーシップ・マネジメント/キャリア関連/リベラルアーツ関連/教養関連/メンタル関連/育成関連/時事ネタ/その他）","summary":"100文字程度の日本語要約"}`
+
     const groqRes = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -39,17 +43,16 @@ Deno.serve(async (req) => {
       },
       body: JSON.stringify({
         model: 'llama-3.1-8b-instant',
-        messages: [{
-          role: 'user',
-          content: `以下のYouTube動画を日本語で分析してください。\nタイトル: ${snippet.title}\n説明: ${snippet.description?.substring(0, 800) || ''}\n\n以下のJSON形式のみで回答してください（他のテキスト不要）：\n{"category":"カテゴリ（技術/料理/音楽/ゲーム/教育/ニュース/エンタメ/スポーツ/マーケティング・営業/投資・金融/経営・戦略/キャリア・自己問発/起業・スタートアップ/健康/旅行/AI時代を考える/AI tech/AI他社状況/AI関連（TBS CRSS DIG）/AIニュース（いけともch）/AI1人起業/Claude関連/Claude Codeによるアプリ開発/Claude Design関連/GitHub関連/業務プロセス変革/人生観/ビジネススキル/リーダーシップ・マネジメント/キャリア関連/リベラルアーツ関連/教養関連/メンタル関連/育成関連/時事ネタ/その他）","summary":"100文字程度の日本語要約"}`,
-        }],
+        messages: [{ role: 'user', content: groqPrompt }],
         temperature: 0.3,
       }),
     })
     const groqData = await groqRes.json()
     const rawText = groqData.choices[0].message.content.trim()
     const jsonMatch = rawText.match(/\{[\s\S]*\}/)
-    const { category, summary } = JSON.parse(jsonMatch![0])
+    const parsed = JSON.parse(jsonMatch![0])
+    const category = manualCategory || parsed.category
+    const summary = parsed.summary
 
     const dbRes = await fetch(`${SUPABASE_URL}/rest/v1/videos`, {
       method: 'POST',
