@@ -76,8 +76,12 @@ export default function VideoDetailModal({ video, onClose, onDeleted, onCategory
   }
 
   const handleFileDelete = async (file) => {
+    const { error, count } = await supabase
+      .from('files')
+      .delete({ count: 'exact' })
+      .eq('id', file.id)
+    if (error || count === 0) return
     await supabase.storage.from('notebooks').remove([file.storage_path])
-    await supabase.from('files').delete().eq('id', file.id)
     setFiles(prev => prev.filter(f => f.id !== file.id))
   }
 
