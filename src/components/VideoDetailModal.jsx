@@ -51,26 +51,32 @@ export default function VideoDetailModal({ video, onClose, onDeleted }) {
   }
 
   const handleFileUpload = async (e) => {
-    const file = e.target.files[0]
-    if (!file) return
+    const selected = Array.from(e.target.files)
+    if (!selected.length) return
     setUploading(true)
-
-    const fileName = `${video.id}/${Date.now()}_${file.name}`
-    const { data: storageData, error: storageErr } = await supabase.storage
-      .from('notebooks')
-      .upload(fileName, file)
-
-    if (!storageErr) {
-      await supabase.from('files').insert({
-        video_id: video.id,
-        name: file.name,
-        file_type: file.name.split('.').pop().toLowerCase(),
-        storage_path: storageData.path,
-      })
-      await loadFiles()
+    for (const file of selected) {
+      const fileName = `${video.id}/${Date.now()}_${file.name}`
+      const { data: storageData, error: storageErr } = await supabase.storage
+        .from('notebooks')
+        .upload(fileName, file)
+      if (!storageErr) {
+        await supabase.from('files').insert({
+          video_id: video.id,
+          name: file.name,
+          file_type: file.name.split('.').pop().toLowerCase(),
+          storage_path: storageData.path,
+        })
+      }
     }
+    await loadFiles()
     setUploading(false)
     e.target.value = ''
+  }
+
+  const handleFileDelete = async (file) => {
+    await supabase.storage.from('notebooks').remove([file.storage_path])
+    await supabase.from('files').delete().eq('id', file.id)
+    setFiles(prev => prev.filter(f => f.id !== file.id))
   }
 
   const getFileUrl = (path) => {
@@ -184,6 +190,7 @@ export default function VideoDetailModal({ video, onClose, onDeleted }) {
                 <input
                   type="file"
                   accept=".pdf,.pptx,.ppt,.png,.jpg,.jpeg"
+                  multiple
                   onChange={handleFileUpload}
                   className="hidden"
                   disabled={uploading}
@@ -201,22 +208,26 @@ export default function VideoDetailModal({ video, onClose, onDeleted }) {
             ) : (
               <div className="space-y-2">
                 {files.map(file => (
-                  <a
-                    key={file.id}
-                    href={getFileUrl(file.storage_path)}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors"
-                  >
+                  <div key={file.id} className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl">
                     <span className="text-xl">{fileIcon(file.file_type)}</span>
-                    <div className="flex-1 min-w-0">
+                    <a
+                      href={getFileUrl(file.storage_path)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex-1 min-w-0 hover:opacity-70"
+                    >
                       <p className="text-sm text-gray-900 truncate">{file.name}</p>
                       <p className="text-xs text-gray-400 uppercase">{file.file_type}</p>
-                    </div>
-                    <svg className="w-4 h-4 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                    </svg>
-                  </a>
+                    </a>
+                    <button
+                      onClick={() => handleFileDelete(file)}
+                      className="text-gray-300 hover:text-red-500 flex-shrink-0 transition-colors"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      </svg>
+                    </button>
+                  </div>
                 ))}
               </div>
             )}
