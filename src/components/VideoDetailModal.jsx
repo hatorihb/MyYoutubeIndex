@@ -32,10 +32,15 @@ export default function VideoDetailModal({ video, onClose, onDeleted, onCategory
   }
 
   const handleCategoryChange = async (newCategory) => {
-    setCategory(newCategory)
     setEditingCategory(false)
-    const { error } = await supabase.from('videos').update({ category: newCategory }).eq('id', video.id)
-    if (!error) onCategoryChanged?.(newCategory)
+    const { error, count } = await supabase
+      .from('videos')
+      .update({ category: newCategory }, { count: 'exact' })
+      .eq('id', video.id)
+    if (!error && count > 0) {
+      setCategory(newCategory)
+      onCategoryChanged?.(newCategory)
+    }
   }
 
   useEffect(() => {
