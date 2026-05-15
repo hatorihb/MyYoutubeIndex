@@ -5,6 +5,11 @@ import AddVideoModal from './components/AddVideoModal'
 import VideoDetailModal from './components/VideoDetailModal'
 
 export default function App() {
+  const [session, setSession] = useState(null)
+  const [authLoading, setAuthLoading] = useState(true)
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [loginError, setLoginError] = useState('')
   const [videos, setVideos] = useState([])
   const [searchResults, setSearchResults] = useState([])
   const [selectedVideo, setSelectedVideo] = useState(null)
@@ -15,6 +20,24 @@ export default function App() {
   const [isSearchMode, setIsSearchMode] = useState(false)
   const [selectedCategories, setSelectedCategories] = useState(new Set())
   const [sortAscending, setSortAscending] = useState(false)
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session)
+      setAuthLoading(false)
+    })
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session)
+    })
+    return () => subscription.unsubscribe()
+  }, [])
+
+  const handleLogin = async (e) => {
+    e.preventDefault()
+    setLoginError('')
+    const { error } = await supabase.auth.signInWithPassword({ email, password })
+    if (error) setLoginError('メールアドレスまたはパスワードが違います')
+  }
 
   const loadVideos = useCallback(async () => {
     setLoading(true)
@@ -67,6 +90,31 @@ export default function App() {
     setShowAddModal(false)
   }
 
+  if (authLoading) return (
+    <div className="flex justify-center py-16">
+      <div className="w-8 h-8 border-4 border-red-500 border-t-transparent rounded-full animate-spin" />
+    </div>
+  )
+
+  if (!session) return (
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <form onSubmit={handleLogin} className="bg-white p-8 rounded-2xl shadow-sm w-80 flex flex-col gap-4">
+        <div className="flex items-center gap-2 justify-center mb-2">
+          <div className="w-8 h-8 bg-red-500 rounded-lg flex items-center justify-center">
+            <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z"/>
+            </svg>
+          </div>
+          <h1 className="text-lg font-bold text-gray-900">MyYoutubeIndex</h1>
+        </div>
+        <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="メールアドレス" className="px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-red-400" required />
+        <input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="パスワード" className="px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-red-400" required />
+        {loginError && <p className="text-red-500 text-sm text-center">{loginError}</p>}
+        <button type="submit" className="px-4 py-2 bg-red-500 text-white rounded-lg font-medium hover:bg-red-600">ログイン</button>
+      </form>
+    </div>
+  )
+
   return (
     <div className="min-h-screen bg-gray-50">
       <header className="bg-white shadow-sm sticky top-0 z-10">
@@ -79,6 +127,12 @@ export default function App() {
             </div>
             <h1 className="text-lg font-bold text-gray-900">MyYoutubeIndex</h1>
             <span className="ml-auto text-xs text-gray-400">{videos.length}本</span>
+            <button
+              onClick={() => supabase.auth.signOut()}
+              className="text-xs text-gray-400 hover:text-gray-600"
+            >
+              ログアウト
+            </button>
             {!isSearchMode && (
               <button
                 onClick={() => setSortAscending(v => !v)}
