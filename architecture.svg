@@ -1,0 +1,352 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 760" font-family="'Segoe UI', system-ui, Arial, sans-serif">
+  <defs>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="130%">
+      <feDropShadow dx="0" dy="3" stdDeviation="5" flood-color="rgba(0,0,0,0.12)"/>
+    </filter>
+    <filter id="shadow-sm" x="-5%" y="-5%" width="110%" height="120%">
+      <feDropShadow dx="0" dy="1" stdDeviation="3" flood-color="rgba(0,0,0,0.08)"/>
+    </filter>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#f8fafc"/>
+      <stop offset="100%" stop-color="#eef2ff"/>
+    </linearGradient>
+    <linearGradient id="supabase-header" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#1a1a2e"/>
+      <stop offset="100%" stop-color="#16213e"/>
+    </linearGradient>
+    <marker id="arr" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+      <polygon points="0 0,8 3,0 6" fill="#64748b"/>
+    </marker>
+    <marker id="arr-blue" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+      <polygon points="0 0,8 3,0 6" fill="#3b82f6"/>
+    </marker>
+    <marker id="arr-green" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+      <polygon points="0 0,8 3,0 6" fill="#22c55e"/>
+    </marker>
+    <marker id="arr-red" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+      <polygon points="0 0,8 3,0 6" fill="#ef4444"/>
+    </marker>
+    <marker id="arr-purple" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+      <polygon points="0 0,8 3,0 6" fill="#a855f7"/>
+    </marker>
+    <marker id="arr-orange" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+      <polygon points="0 0,8 3,0 6" fill="#f97316"/>
+    </marker>
+  </defs>
+
+  <!-- ── Background ── -->
+  <rect width="1200" height="760" fill="url(#bg)"/>
+
+  <!-- ── Title ── -->
+  <text x="600" y="42" text-anchor="middle" font-size="22" font-weight="700" fill="#0f172a" letter-spacing="-0.5">MyYoutubeIndex — System Architecture</text>
+
+  <!-- ═══════════════════════════════════════
+       COLUMN 1: FRONTEND  (x 20-285)
+  ═══════════════════════════════════════ -->
+  <rect x="20" y="60" width="268" height="660" fill="white" rx="14" stroke="#e2e8f0" stroke-width="1.5" filter="url(#shadow)"/>
+  <!-- header -->
+  <rect x="20" y="60" width="268" height="40" fill="#0f172a" rx="14"/>
+  <rect x="20" y="84" width="268" height="16" fill="#0f172a"/>
+  <text x="154" y="85" text-anchor="middle" font-size="13" font-weight="700" fill="white" letter-spacing="1">FRONTEND</text>
+
+  <!-- ── React card ── -->
+  <rect x="36" y="114" width="116" height="110" fill="#0f172a" rx="10" filter="url(#shadow-sm)"/>
+  <!-- React atom logo -->
+  <g transform="translate(94,148)">
+    <ellipse rx="28" ry="10" fill="none" stroke="#61DAFB" stroke-width="2"/>
+    <ellipse rx="28" ry="10" fill="none" stroke="#61DAFB" stroke-width="2" transform="rotate(60)"/>
+    <ellipse rx="28" ry="10" fill="none" stroke="#61DAFB" stroke-width="2" transform="rotate(120)"/>
+    <circle r="4" fill="#61DAFB"/>
+  </g>
+  <text x="94" y="198" text-anchor="middle" font-size="12" font-weight="700" fill="#61DAFB">React 18</text>
+  <text x="94" y="213" text-anchor="middle" font-size="9.5" fill="#94a3b8">UI Framework</text>
+
+  <!-- ── Vite card ── -->
+  <rect x="168" y="114" width="104" height="110" fill="#1e1b2e" rx="10" filter="url(#shadow-sm)"/>
+  <!-- Vite logo (simplified V lightning) -->
+  <g transform="translate(220,148)">
+    <!-- outer V -->
+    <polygon points="-18,-22 0,0 18,-22" fill="none" stroke="#646cff" stroke-width="2.5" stroke-linejoin="round"/>
+    <!-- inner lightning -->
+    <polygon points="-8,-22 0,0 8,-22" fill="none" stroke="#ffbd2e" stroke-width="2" stroke-linejoin="round"/>
+  </g>
+  <text x="220" y="198" text-anchor="middle" font-size="12" font-weight="700" fill="#646cff">Vite 5</text>
+  <text x="220" y="213" text-anchor="middle" font-size="9.5" fill="#94a3b8">Build Tool</text>
+
+  <!-- ── Tailwind card ── -->
+  <rect x="36" y="238" width="236" height="80" fill="#0f1923" rx="10" filter="url(#shadow-sm)"/>
+  <!-- Tailwind wave logo -->
+  <g transform="translate(80,278)">
+    <path d="M-36,-10 C-36,-26 -12,-34 0,-18 C12,-2 36,-10 36,-26 C36,-10 12,-2 0,14 C-12,30 -36,22 -36,6 Z" fill="#38bdf8" opacity="0.9"/>
+  </g>
+  <text x="154" y="266" text-anchor="middle" font-size="12" font-weight="700" fill="#38bdf8">Tailwind CSS 3</text>
+  <text x="154" y="303" text-anchor="middle" font-size="9.5" fill="#94a3b8">Styling</text>
+
+  <!-- ── Components ── -->
+  <rect x="36" y="332" width="236" height="170" fill="#f8fafc" rx="10" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="154" y="352" text-anchor="middle" font-size="11" font-weight="700" fill="#475569">Components</text>
+  <rect x="48" y="360" width="100" height="28" fill="#fff" rx="6" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="98" y="379" text-anchor="middle" font-size="10" fill="#374151">App.jsx</text>
+  <rect x="160" y="360" width="100" height="28" fill="#fff" rx="6" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="210" y="379" text-anchor="middle" font-size="10" fill="#374151">VideoCard</text>
+  <rect x="48" y="396" width="100" height="28" fill="#fff" rx="6" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="98" y="415" text-anchor="middle" font-size="10" fill="#374151">AddVideoModal</text>
+  <rect x="160" y="396" width="100" height="28" fill="#fff" rx="6" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="210" y="415" text-anchor="middle" font-size="10" fill="#374151">DetailModal</text>
+  <rect x="48" y="432" width="212" height="28" fill="#fef9c3" rx="6" stroke="#fde047" stroke-width="1"/>
+  <text x="154" y="451" text-anchor="middle" font-size="10" fill="#713f12">src/lib/supabase.js  (クライアント初期化)</text>
+  <text x="154" y="474" text-anchor="middle" font-size="9.5" fill="#64748b">検索 / フィルタ / ソート / ログイン</text>
+  <text x="154" y="488" text-anchor="middle" font-size="9.5" fill="#64748b">カテゴリチップ / グリッド表示</text>
+
+  <!-- ── Auth note ── -->
+  <rect x="36" y="516" width="236" height="48" fill="#fef2f2" rx="10" stroke="#fca5a5" stroke-width="1"/>
+  <text x="154" y="537" text-anchor="middle" font-size="11" font-weight="700" fill="#dc2626">Supabase Auth</text>
+  <text x="154" y="552" text-anchor="middle" font-size="9.5" fill="#ef4444">メール＋パスワード / セッション管理</text>
+
+  <!-- ── Tech labels ── -->
+  <rect x="36" y="578" width="236" height="126" fill="#f1f5f9" rx="10"/>
+  <text x="154" y="598" text-anchor="middle" font-size="10" font-weight="700" fill="#475569">ユーザー操作</text>
+  <text x="48" y="616" font-size="9.5" fill="#64748b">✦ YouTubeのURL貼り付け → 動画追加</text>
+  <text x="48" y="632" font-size="9.5" fill="#64748b">✦ キーワード検索 (意味検索)</text>
+  <text x="48" y="648" font-size="9.5" fill="#64748b">✦ カテゴリフィルタ / 新旧ソート</text>
+  <text x="48" y="664" font-size="9.5" fill="#64748b">✦ 動画詳細 / カテゴリ変更 / 削除</text>
+  <text x="48" y="680" font-size="9.5" fill="#64748b">✦ ログイン / ログアウト</text>
+
+  <!-- ═══════════════════════════════════════
+       COLUMN 2: SUPABASE  (x 308-830)
+  ═══════════════════════════════════════ -->
+  <rect x="308" y="60" width="534" height="660" fill="white" rx="14" stroke="#e2e8f0" stroke-width="1.5" filter="url(#shadow)"/>
+  <!-- header -->
+  <rect x="308" y="60" width="534" height="40" fill="url(#supabase-header)" rx="14"/>
+  <rect x="308" y="84" width="534" height="16" fill="#16213e"/>
+  <!-- Supabase lightning logo -->
+  <g transform="translate(384,80)">
+    <path d="M8,0 L0,14 L7,14 L4,28 L16,12 L9,12 Z" fill="#3ECF8E"/>
+  </g>
+  <text x="575" y="85" text-anchor="middle" font-size="13" font-weight="700" fill="white" letter-spacing="1">SUPABASE  PLATFORM</text>
+
+  <!-- ── Edge Functions header ── -->
+  <rect x="324" y="114" width="502" height="30" fill="#4c1d95" rx="8"/>
+  <text x="575" y="134" text-anchor="middle" font-size="11" font-weight="700" fill="#e9d5ff" letter-spacing="0.5">⚡ Edge Functions (Deno Runtime)</text>
+
+  <!-- ── add-video function ── -->
+  <rect x="324" y="154" width="240" height="200" fill="#faf5ff" rx="10" stroke="#a855f7" stroke-width="1.5" filter="url(#shadow-sm)"/>
+  <!-- Deno logo simplified -->
+  <g transform="translate(364,178)">
+    <circle r="22" fill="#1a1a1a"/>
+    <!-- Deno dino simplified -->
+    <path d="M-10,-8 L-10,4 L-4,8 L4,8 L10,4 L10,-8 L4,-14 L-4,-14 Z" fill="#4ade80" opacity="0.8"/>
+    <circle cx="4" cy="-6" r="2.5" fill="white"/>
+    <path d="M10,2 L16,6" stroke="#4ade80" stroke-width="2.5" stroke-linecap="round"/>
+  </g>
+  <text x="444" y="170" text-anchor="middle" font-size="12" font-weight="700" fill="#7c3aed">add-video</text>
+  <line x1="334" y1="210" x2="554" y2="210" stroke="#e9d5ff" stroke-width="1"/>
+  <text x="344" y="226" font-size="9.5" fill="#6d28d9">① YouTube URL 受け取り</text>
+  <text x="344" y="242" font-size="9.5" fill="#6d28d9">② YouTube Data API → 動画情報取得</text>
+  <text x="344" y="258" font-size="9.5" fill="#6d28d9">③ Groq AI → カテゴリ分類・要約生成</text>
+  <text x="344" y="274" font-size="9.5" fill="#6d28d9">    (llama-3.1-8b-instant)</text>
+  <text x="344" y="290" font-size="9.5" fill="#6d28d9">④ プレビュー確認モード対応</text>
+  <text x="344" y="306" font-size="9.5" fill="#6d28d9">⑤ videos テーブルに UPSERT</text>
+  <text x="344" y="322" font-size="9.5" fill="#6d28d9">    (embedding は別途生成)</text>
+  <text x="344" y="340" font-size="9.5" fill="#6d28d9">⑥ 保存済みレコード返却</text>
+
+  <!-- ── search-videos function ── -->
+  <rect x="586" y="154" width="240" height="200" fill="#faf5ff" rx="10" stroke="#a855f7" stroke-width="1.5" filter="url(#shadow-sm)"/>
+  <g transform="translate(626,178)">
+    <circle r="22" fill="#1a1a1a"/>
+    <path d="M-10,-8 L-10,4 L-4,8 L4,8 L10,4 L10,-8 L4,-14 L-4,-14 Z" fill="#4ade80" opacity="0.8"/>
+    <circle cx="4" cy="-6" r="2.5" fill="white"/>
+    <path d="M10,2 L16,6" stroke="#4ade80" stroke-width="2.5" stroke-linecap="round"/>
+  </g>
+  <text x="706" y="170" text-anchor="middle" font-size="12" font-weight="700" fill="#7c3aed">search-videos</text>
+  <line x1="596" y1="210" x2="816" y2="210" stroke="#e9d5ff" stroke-width="1"/>
+  <text x="606" y="226" font-size="9.5" fill="#6d28d9">① 検索クエリ受け取り</text>
+  <text x="606" y="242" font-size="9.5" fill="#6d28d9">② Groq AI → キーワード展開</text>
+  <text x="606" y="258" font-size="9.5" fill="#6d28d9">    (クエリを3〜5語に分解)</text>
+  <text x="606" y="274" font-size="9.5" fill="#6d28d9">③ search_videos() RPC 呼出</text>
+  <text x="606" y="290" font-size="9.5" fill="#6d28d9">    ベクトル類似検索 (cosine)</text>
+  <text x="606" y="306" font-size="9.5" fill="#6d28d9">    + full-text fallback</text>
+  <text x="606" y="322" font-size="9.5" fill="#6d28d9">④ 上位20件返却</text>
+  <text x="606" y="338" font-size="9.5" fill="#6d28d9">    (Groq失敗時は元クエリで検索)</text>
+
+  <!-- ── PostgreSQL header ── -->
+  <rect x="324" y="368" width="502" height="28" fill="#1e3a5f" rx="8"/>
+  <!-- PostgreSQL elephant logo simplified -->
+  <g transform="translate(350,382)">
+    <circle r="11" fill="#336791"/>
+    <circle cx="6" cy="13" r="5" fill="#336791"/>
+    <path d="M0,11 Q8,16 6,24" stroke="#4a90c4" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+    <circle cx="-3" cy="5" r="2" fill="white" opacity="0.9"/>
+  </g>
+  <text x="575" y="387" text-anchor="middle" font-size="11" font-weight="700" fill="#bfdbfe" letter-spacing="0.5">PostgreSQL 15 + pgvector</text>
+
+  <!-- ── videos table ── -->
+  <rect x="324" y="406" width="310" height="200" fill="#f0f9ff" rx="10" stroke="#7dd3fc" stroke-width="1.5"/>
+  <text x="479" y="425" text-anchor="middle" font-size="11" font-weight="700" fill="#0369a1">📺  videos テーブル</text>
+  <line x1="334" y1="432" x2="624" y2="432" stroke="#bae6fd" stroke-width="1"/>
+  <!-- table rows -->
+  <rect x="334" y="438" width="290" height="18" fill="white" rx="3"/>
+  <text x="344" y="451" font-size="9" fill="#0369a1" font-weight="600">id</text>
+  <text x="420" y="451" font-size="9" fill="#475569">UUID  PRIMARY KEY</text>
+  <text x="344" y="468" font-size="9" fill="#0369a1" font-weight="600">youtube_id</text>
+  <text x="420" y="468" font-size="9" fill="#475569">TEXT  UNIQUE</text>
+  <text x="344" y="484" font-size="9" fill="#0369a1" font-weight="600">title / channel</text>
+  <text x="420" y="484" font-size="9" fill="#475569">TEXT</text>
+  <text x="344" y="500" font-size="9" fill="#0369a1" font-weight="600">thumbnail_url</text>
+  <text x="420" y="500" font-size="9" fill="#475569">TEXT</text>
+  <text x="344" y="516" font-size="9" fill="#0369a1" font-weight="600">category / summary</text>
+  <text x="420" y="516" font-size="9" fill="#475569">TEXT  ← Groq AI 生成</text>
+  <text x="344" y="532" font-size="9" fill="#0369a1" font-weight="600">tags</text>
+  <text x="420" y="532" font-size="9" fill="#475569">TEXT[]</text>
+  <text x="344" y="548" font-size="9" fill="#7c3aed" font-weight="600">embedding</text>
+  <text x="420" y="548" font-size="9" fill="#7c3aed">VECTOR(768)  ← pgvector</text>
+  <text x="344" y="564" font-size="9" fill="#0369a1" font-weight="600">published_at / created_at</text>
+  <text x="420" y="564" font-size="9" fill="#475569">TIMESTAMPTZ</text>
+  <rect x="334" y="572" width="290" height="24" fill="#e0f2fe" rx="3"/>
+  <text x="479" y="588" text-anchor="middle" font-size="9" fill="#0369a1">RLS: public SELECT / service_role INSERT/UPDATE</text>
+
+  <!-- ── files table + RPC ── -->
+  <rect x="648" y="406" width="178" height="96" fill="#f0f9ff" rx="10" stroke="#7dd3fc" stroke-width="1.5"/>
+  <text x="737" y="424" text-anchor="middle" font-size="11" font-weight="700" fill="#0369a1">📁  files テーブル</text>
+  <line x1="658" y1="430" x2="816" y2="430" stroke="#bae6fd" stroke-width="1"/>
+  <text x="668" y="446" font-size="9" fill="#475569">video_id  UUID FK → videos</text>
+  <text x="668" y="462" font-size="9" fill="#475569">name / file_type  TEXT</text>
+  <text x="668" y="478" font-size="9" fill="#475569">storage_path  TEXT</text>
+  <text x="668" y="494" font-size="9" fill="#64748b">NotebookLMエクスポート管理</text>
+
+  <rect x="648" y="516" width="178" height="80" fill="#ecfdf5" rx="10" stroke="#6ee7b7" stroke-width="1.5"/>
+  <text x="737" y="534" text-anchor="middle" font-size="11" font-weight="700" fill="#065f46">search_videos() RPC</text>
+  <line x1="658" y1="540" x2="816" y2="540" stroke="#a7f3d0" stroke-width="1"/>
+  <text x="668" y="556" font-size="9" fill="#065f46">cosine similarity search</text>
+  <text x="668" y="572" font-size="9" fill="#065f46">embedding &lt;=&gt; query_embedding</text>
+  <text x="668" y="588" font-size="9" fill="#065f46">TOP-20 返却</text>
+
+  <!-- ── Storage ── -->
+  <rect x="324" y="618" width="502" height="80" fill="#fff7ed" rx="10" stroke="#fdba74" stroke-width="1.5"/>
+  <!-- Storage icon -->
+  <g transform="translate(360,660)">
+    <rect x="-14" y="-16" width="28" height="20" rx="3" fill="#f97316" opacity="0.8"/>
+    <ellipse cx="0" cy="-16" rx="14" ry="5" fill="#fb923c"/>
+    <ellipse cx="0" cy="4" rx="14" ry="5" fill="#fed7aa"/>
+  </g>
+  <text x="575" y="644" text-anchor="middle" font-size="11" font-weight="700" fill="#c2410c">Supabase Storage — notebooks バケット</text>
+  <text x="575" y="662" text-anchor="middle" font-size="9.5" fill="#9a3412">NotebookLMエクスポートファイルを保存 (公開バケット)</text>
+  <text x="575" y="678" text-anchor="middle" font-size="9.5" fill="#9a3412">ファイルパスを files テーブルに記録 / カスケード削除対応</text>
+
+  <!-- ═══════════════════════════════════════
+       COLUMN 3: EXTERNAL APIs  (x 862-1180)
+  ═══════════════════════════════════════ -->
+  <rect x="862" y="60" width="318" height="660" fill="white" rx="14" stroke="#e2e8f0" stroke-width="1.5" filter="url(#shadow)"/>
+  <!-- header -->
+  <rect x="862" y="60" width="318" height="40" fill="#0f172a" rx="14"/>
+  <rect x="862" y="84" width="318" height="16" fill="#0f172a"/>
+  <text x="1021" y="85" text-anchor="middle" font-size="13" font-weight="700" fill="white" letter-spacing="1">EXTERNAL  APIs</text>
+
+  <!-- ── YouTube Data API ── -->
+  <rect x="878" y="114" width="286" height="200" fill="#fff5f5" rx="12" stroke="#fca5a5" stroke-width="1.5" filter="url(#shadow-sm)"/>
+  <!-- YouTube logo -->
+  <g transform="translate(1021,168)">
+    <rect x="-36" y="-22" width="72" height="44" rx="10" fill="#FF0000"/>
+    <polygon points="-12,-14 -12,14 22,0" fill="white"/>
+  </g>
+  <text x="1021" y="230" text-anchor="middle" font-size="14" font-weight="700" fill="#dc2626">YouTube Data API v3</text>
+  <line x1="888" y1="240" x2="1154" y2="240" stroke="#fecaca" stroke-width="1"/>
+  <text x="898" y="256" font-size="9.5" fill="#991b1b">取得フィールド: title, channelTitle</text>
+  <text x="898" y="272" font-size="9.5" fill="#991b1b">description, publishedAt, tags</text>
+  <text x="898" y="288" font-size="9.5" fill="#991b1b">thumbnails (high/default)</text>
+  <text x="898" y="304" font-size="9.5" fill="#475569">→ add-video 関数が呼出</text>
+  <rect x="888" y="308" width="276" height="20" fill="#fee2e2" rx="4"/>
+  <text x="1021" y="322" text-anchor="middle" font-size="9" fill="#991b1b">API Key: YOUTUBE_API_KEY (env)</text>
+
+  <!-- ── Groq API ── -->
+  <rect x="878" y="330" width="286" height="270" fill="#fdf4ff" rx="12" stroke="#d8b4fe" stroke-width="1.5" filter="url(#shadow-sm)"/>
+  <!-- Groq logo simplified -->
+  <g transform="translate(1021,390)">
+    <!-- Groq stylized G -->
+    <circle r="34" fill="#ff4500" opacity="0.1"/>
+    <path d="M-20,0 A24,24 0 1,1 12,18 L12,6 L2,6" fill="none" stroke="#ff4500" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+  <text x="1021" y="446" text-anchor="middle" font-size="16" font-weight="800" fill="#ff4500" letter-spacing="-1">Groq</text>
+  <text x="1021" y="463" text-anchor="middle" font-size="10" fill="#7c3aed">llama-3.1-8b-instant</text>
+  <line x1="888" y1="472" x2="1154" y2="472" stroke="#e9d5ff" stroke-width="1"/>
+  <!-- add-video use -->
+  <rect x="888" y="480" width="276" height="52" fill="white" rx="6" stroke="#e9d5ff" stroke-width="1"/>
+  <text x="1026" y="496" text-anchor="middle" font-size="10" font-weight="700" fill="#7c3aed">add-video での利用</text>
+  <text x="898" y="512" font-size="9.5" fill="#6d28d9">カテゴリ分類 (20種) + 100字要約</text>
+  <text x="898" y="526" font-size="9.5" fill="#6d28d9">temperature: 0.3 / JSON出力</text>
+  <!-- search use -->
+  <rect x="888" y="540" width="276" height="48" fill="white" rx="6" stroke="#e9d5ff" stroke-width="1"/>
+  <text x="1026" y="556" text-anchor="middle" font-size="10" font-weight="700" fill="#7c3aed">search-videos での利用</text>
+  <text x="898" y="572" font-size="9.5" fill="#6d28d9">クエリ → 3〜5キーワードに展開</text>
+  <text x="898" y="586" font-size="9.5" fill="#6d28d9">temperature: 0.1 / JSON配列出力</text>
+  <rect x="888" y="594" width="276" height="20" fill="#f3e8ff" rx="4"/>
+  <text x="1021" y="608" text-anchor="middle" font-size="9" fill="#7c3aed">API Key: GROQ_API_KEY (env)</text>
+
+  <!-- ── Request limit note ── -->
+  <rect x="878" y="614" width="286" height="88" fill="#f8fafc" rx="10" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="1021" y="634" text-anchor="middle" font-size="10" font-weight="700" fill="#475569">カテゴリ一覧 (Groq分類)</text>
+  <text x="888" y="650" font-size="9" fill="#64748b">AI｜社会・未来 / AI｜ツール・実践</text>
+  <text x="888" y="664" font-size="9" fill="#64748b">Claude｜アプリ開発 / 技術・開発</text>
+  <text x="888" y="678" font-size="9" fill="#64748b">育成｜組織 / キャリア / 人生観 / 時事 ...</text>
+  <text x="888" y="692" font-size="9" fill="#64748b">計20カテゴリ</text>
+
+  <!-- ═══════════════════════════════════════
+       ARROWS
+  ═══════════════════════════════════════ -->
+
+  <!-- Frontend → Supabase Auth (red) -->
+  <path d="M288,534 L308,534" stroke="#ef4444" stroke-width="2" fill="none" marker-end="url(#arr-red)"/>
+  <text x="298" y="527" text-anchor="middle" font-size="8" fill="#ef4444">Auth</text>
+
+  <!-- Frontend → add-video (purple) -->
+  <path d="M288,390 L324,270" stroke="#a855f7" stroke-width="2" fill="none" marker-end="url(#arr-purple)" stroke-dasharray="5,3"/>
+  <text x="298" y="340" text-anchor="middle" font-size="8" fill="#a855f7" transform="rotate(-25,298,340)">add</text>
+
+  <!-- Frontend → search-videos (blue) -->
+  <path d="M288,420 L586,260" stroke="#3b82f6" stroke-width="2" fill="none" marker-end="url(#arr-blue)" stroke-dasharray="5,3"/>
+  <text x="440" y="360" text-anchor="middle" font-size="8" fill="#3b82f6">search</text>
+
+  <!-- Frontend ← DB (videos, read) -->
+  <path d="M308,500 L288,480" stroke="#64748b" stroke-width="1.5" fill="none" marker-end="url(#arr)" stroke-dasharray="4,3"/>
+  <text x="294" y="497" text-anchor="middle" font-size="8" fill="#64748b">READ</text>
+
+  <!-- add-video → YouTube API -->
+  <path d="M564,210 Q680,160 878,180" stroke="#ef4444" stroke-width="2" fill="none" marker-end="url(#arr-red)" stroke-dasharray="5,3"/>
+  <text x="720" y="155" text-anchor="middle" font-size="9" fill="#ef4444">YouTube Data API</text>
+
+  <!-- add-video → Groq -->
+  <path d="M564,260 Q720,290 878,380" stroke="#a855f7" stroke-width="2" fill="none" marker-end="url(#arr-purple)" stroke-dasharray="5,3"/>
+  <text x="730" y="310" text-anchor="middle" font-size="9" fill="#a855f7">Groq (分析)</text>
+
+  <!-- search-videos → Groq -->
+  <path d="M826,260 Q860,300 878,420" stroke="#a855f7" stroke-width="1.5" fill="none" marker-end="url(#arr-purple)" stroke-dasharray="5,3"/>
+  <text x="878" y="340" text-anchor="middle" font-size="9" fill="#a855f7">Groq (検索)</text>
+
+  <!-- add-video → DB -->
+  <path d="M444,354 L444,406" stroke="#22c55e" stroke-width="2" fill="none" marker-end="url(#arr-green)"/>
+  <text x="458" y="384" font-size="9" fill="#22c55e">UPSERT</text>
+
+  <!-- search-videos → RPC -->
+  <path d="M706,354 L706,516" stroke="#22c55e" stroke-width="2" fill="none" marker-end="url(#arr-green)"/>
+  <text x="718" y="440" font-size="9" fill="#22c55e">RPC</text>
+
+  <!-- RPC → videos table (cosine search) -->
+  <path d="M648,556 L634,530" stroke="#22c55e" stroke-width="1.5" fill="none" marker-end="url(#arr-green)" stroke-dasharray="4,3"/>
+
+  <!-- files → Storage -->
+  <path d="M737,502 L737,618" stroke="#f97316" stroke-width="1.5" fill="none" marker-end="url(#arr-orange)" stroke-dasharray="4,3"/>
+
+  <!-- ═══════════════════════════════════════
+       LEGEND
+  ═══════════════════════════════════════ -->
+  <rect x="20" y="728" width="1160" height="24" fill="#f1f5f9" rx="6"/>
+  <line x1="40" y1="740" x2="68" y2="740" stroke="#a855f7" stroke-width="2" stroke-dasharray="5,3" marker-end="url(#arr-purple)"/>
+  <text x="73" y="744" font-size="9" fill="#475569">Edge Function 呼出</text>
+  <line x1="180" y1="740" x2="208" y2="740" stroke="#22c55e" stroke-width="2" marker-end="url(#arr-green)"/>
+  <text x="213" y="744" font-size="9" fill="#475569">DB 読み書き</text>
+  <line x1="295" y1="740" x2="323" y2="740" stroke="#ef4444" stroke-width="2" stroke-dasharray="5,3" marker-end="url(#arr-red)"/>
+  <text x="328" y="744" font-size="9" fill="#475569">外部API呼出</text>
+  <line x1="415" y1="740" x2="443" y2="740" stroke="#64748b" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#arr)"/>
+  <text x="448" y="744" font-size="9" fill="#475569">データ返却</text>
+  <text x="600" y="744" font-size="9" fill="#475569">※ 全Edge FunctionリクエストにSupabaseセッショントークンが付与 / RLSでアクセス制御</text>
+</svg>
