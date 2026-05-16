@@ -19,6 +19,7 @@ export default function AddVideoModal({ onClose, onAdded }) {
   const [error, setError] = useState('')
   const [previewData, setPreviewData] = useState(null)
   const [confirmedCategory, setConfirmedCategory] = useState('')
+  const [confirmedRating, setConfirmedRating] = useState(8)
 
   const handleAnalyze = async (e) => {
     e.preventDefault()
@@ -38,6 +39,7 @@ export default function AddVideoModal({ onClose, onAdded }) {
 
     setPreviewData(data)
     setConfirmedCategory(data.category || '')
+    setConfirmedRating(data.rating ?? 8)
     setLoading(false)
   }
 
@@ -46,7 +48,7 @@ export default function AddVideoModal({ onClose, onAdded }) {
     setError('')
 
     const { data, error: err } = await supabase.functions.invoke('add-video', {
-      body: { url: url.trim(), previewData: { ...previewData, category: confirmedCategory } },
+      body: { url: url.trim(), previewData: { ...previewData, category: confirmedCategory, rating: confirmedRating } },
     })
 
     if (err || data?.error) {
@@ -109,6 +111,25 @@ export default function AddVideoModal({ onClose, onAdded }) {
                   <option key={cat} value={cat}>{cat}</option>
                 ))}
               </select>
+            </div>
+
+            <div className="mb-4">
+              <p className="text-xs text-gray-500 mb-2 font-medium">おすすめ度</p>
+              <div className="flex items-center gap-1">
+                {Array.from({ length: 10 }, (_, i) => (
+                  <button
+                    key={i}
+                    type="button"
+                    onClick={() => setConfirmedRating(i + 1)}
+                    className="w-7 h-7 flex-shrink-0"
+                  >
+                    <svg viewBox="0 0 24 24" fill={i < confirmedRating ? '#f59e0b' : 'none'} stroke={i < confirmedRating ? '#f59e0b' : '#d1d5db'} strokeWidth="1.5" strokeLinejoin="round">
+                      <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                    </svg>
+                  </button>
+                ))}
+                <span className="ml-1 text-sm font-medium text-amber-600">{confirmedRating}/10</span>
+              </div>
             </div>
 
             {previewData.summary && (
