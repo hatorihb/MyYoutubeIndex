@@ -20,6 +20,7 @@ export default function App() {
   const [isSearchMode, setIsSearchMode] = useState(false)
   const [selectedCategories, setSelectedCategories] = useState(new Set())
   const [sortOrder, setSortOrder] = useState('newest')
+  const [minRating, setMinRating] = useState(0)
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -58,11 +59,12 @@ export default function App() {
 
   const displayedVideos = useMemo(() => {
     if (isSearchMode) return searchResults
-    const base = selectedCategories.size > 0 ? videos.filter(v => selectedCategories.has(v.category)) : videos
+    let base = selectedCategories.size > 0 ? videos.filter(v => selectedCategories.has(v.category)) : videos
+    if (minRating > 0) base = base.filter(v => (v.rating ?? 0) >= minRating)
     if (sortOrder === 'oldest') return [...base].reverse()
     if (sortOrder === 'rating') return [...base].sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0))
     return base
-  }, [isSearchMode, searchResults, selectedCategories, videos, sortOrder])
+  }, [isSearchMode, searchResults, selectedCategories, videos, sortOrder, minRating])
 
   const handleSearch = async (e) => {
     e.preventDefault()
@@ -134,23 +136,6 @@ export default function App() {
             >
               ログアウト
             </button>
-            {!isSearchMode && (
-              <button
-                onClick={() => setSortOrder(o => o === 'newest' ? 'oldest' : o === 'oldest' ? 'rating' : 'newest')}
-                className="flex items-center gap-1 text-xs text-gray-500 hover:text-gray-700 whitespace-nowrap"
-              >
-                {sortOrder === 'rating' ? (
-                  <svg className="w-3.5 h-3.5 text-amber-400" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-                  </svg>
-                ) : (
-                  <svg className={`w-3.5 h-3.5 transition-transform ${sortOrder === 'oldest' ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4h13M3 8h9M3 12h5m8 0l4-4m0 0l4 4m-4-4v12" />
-                  </svg>
-                )}
-                {sortOrder === 'newest' ? '新しい順' : sortOrder === 'oldest' ? '古い順' : '★高い順'}
-              </button>
-            )}
           </div>
 
           <form onSubmit={handleSearch} className="flex gap-2 mb-2">
@@ -182,6 +167,38 @@ export default function App() {
               {searching ? '...' : '検索'}
             </button>
           </form>
+
+          {!isSearchMode && (
+            <div className="flex gap-1.5 overflow-x-auto pb-1 -mx-4 px-4 mb-1.5" style={{scrollbarWidth: 'none', msOverflowStyle: 'none'}}>
+              {[
+                { key: 'newest', label: '新しい順' },
+                { key: 'oldest', label: '古い順' },
+                { key: 'rating', label: '★高い順' },
+              ].map(({ key, label }) => (
+                <button
+                  key={key}
+                  onClick={() => setSortOrder(key)}
+                  className={`flex-shrink-0 px-3 py-1 rounded-full text-xs font-medium transition-colors ${
+                    sortOrder === key ? 'bg-gray-700 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  }`}
+                >
+                  {label}
+                </button>
+              ))}
+              <div className="w-px bg-gray-200 mx-1 self-stretch flex-shrink-0" />
+              {[0, 5, 6, 7, 8, 9].map(r => (
+                <button
+                  key={r}
+                  onClick={() => setMinRating(r)}
+                  className={`flex-shrink-0 px-3 py-1 rounded-full text-xs font-medium transition-colors ${
+                    minRating === r ? 'bg-amber-400 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  }`}
+                >
+                  {r === 0 ? 'すべて' : `★${r}以上`}
+                </button>
+              ))}
+            </div>
+          )}
 
           {!isSearchMode && categories.length > 0 && (
             <div className="flex gap-2 overflow-x-auto pb-1 -mx-4 px-4" style={{scrollbarWidth: 'none', msOverflowStyle: 'none'}}>
