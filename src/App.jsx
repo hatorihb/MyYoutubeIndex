@@ -264,6 +264,10 @@ export default function App() {
             setSelectedVideo(v => ({ ...v, category: cat }))
             loadVideos()
           }}
+          onRatingChanged={(rating) => {
+            setSelectedVideo(v => ({ ...v, rating }))
+            loadVideos()
+          }}
         />
       )}
     </div>

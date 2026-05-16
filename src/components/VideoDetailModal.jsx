@@ -18,7 +18,7 @@ const fileIcon = (type) => {
   return '📎'
 }
 
-export default function VideoDetailModal({ video, onClose, onDeleted, onCategoryChanged }) {
+export default function VideoDetailModal({ video, onClose, onDeleted, onCategoryChanged, onRatingChanged }) {
   const [files, setFiles] = useState([])
   const [uploading, setUploading] = useState(false)
   const [category, setCategory] = useState(video.category || '')
@@ -33,7 +33,8 @@ export default function VideoDetailModal({ video, onClose, onDeleted, onCategory
 
   const handleRatingChange = async (newRating) => {
     setRating(newRating)
-    await supabase.from('videos').update({ rating: newRating }).eq('id', video.id)
+    const { error } = await supabase.from('videos').update({ rating: newRating }).eq('id', video.id)
+    if (!error) onRatingChanged?.(newRating)
   }
 
   const handleCategoryChange = async (newCategory) => {
