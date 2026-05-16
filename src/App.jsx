@@ -19,7 +19,7 @@ export default function App() {
   const [searching, setSearching] = useState(false)
   const [isSearchMode, setIsSearchMode] = useState(false)
   const [selectedCategories, setSelectedCategories] = useState(new Set())
-  const [sortAscending, setSortAscending] = useState(false)
+  const [sortOrder, setSortOrder] = useState('newest')
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -59,9 +59,10 @@ export default function App() {
   const displayedVideos = useMemo(() => {
     if (isSearchMode) return searchResults
     const base = selectedCategories.size > 0 ? videos.filter(v => selectedCategories.has(v.category)) : videos
-    if (sortAscending) return [...base].reverse()
+    if (sortOrder === 'oldest') return [...base].reverse()
+    if (sortOrder === 'rating') return [...base].sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0))
     return base
-  }, [isSearchMode, searchResults, selectedCategories, videos, sortAscending])
+  }, [isSearchMode, searchResults, selectedCategories, videos, sortOrder])
 
   const handleSearch = async (e) => {
     e.preventDefault()
@@ -135,13 +136,19 @@ export default function App() {
             </button>
             {!isSearchMode && (
               <button
-                onClick={() => setSortAscending(v => !v)}
-                className="flex items-center gap-1 text-xs text-gray-500 hover:text-gray-700"
+                onClick={() => setSortOrder(o => o === 'newest' ? 'oldest' : o === 'oldest' ? 'rating' : 'newest')}
+                className="flex items-center gap-1 text-xs text-gray-500 hover:text-gray-700 whitespace-nowrap"
               >
-                <svg className={`w-3.5 h-3.5 transition-transform ${sortAscending ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4h13M3 8h9M3 12h5m8 0l4-4m0 0l4 4m-4-4v12" />
-                </svg>
-                {sortAscending ? '古い順' : '新しい順'}
+                {sortOrder === 'rating' ? (
+                  <svg className="w-3.5 h-3.5 text-amber-400" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                  </svg>
+                ) : (
+                  <svg className={`w-3.5 h-3.5 transition-transform ${sortOrder === 'oldest' ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4h13M3 8h9M3 12h5m8 0l4-4m0 0l4 4m-4-4v12" />
+                  </svg>
+                )}
+                {sortOrder === 'newest' ? '新しい順' : sortOrder === 'oldest' ? '古い順' : '★高い順'}
               </button>
             )}
           </div>

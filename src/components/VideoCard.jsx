@@ -21,6 +21,12 @@ const categoryColors = {
   'その他': 'bg-gray-100 text-gray-500',
 }
 
+const formatDate = (iso) => {
+  if (!iso) return ''
+  const d = new Date(iso)
+  return `${d.getFullYear()}/${String(d.getMonth() + 1).padStart(2, '0')}/${String(d.getDate()).padStart(2, '0')}`
+}
+
 export default function VideoCard({ video, onClick }) {
   const colorClass = categoryColors[video.category] || 'bg-gray-100 text-gray-600'
 
@@ -43,7 +49,8 @@ export default function VideoCard({ video, onClick }) {
       </div>
       <div>
         <p className="text-sm font-medium line-clamp-2 text-gray-900 leading-tight mb-1">{video.title}</p>
-        <p className="text-xs text-gray-500 mb-1 truncate">{video.channel}</p>
+        <p className="text-xs text-gray-500 truncate">{video.channel}</p>
+        <p className="text-xs text-gray-400 mb-1">{formatDate(video.created_at)}</p>
         {video.category && (
           <span className={`inline-block text-xs px-2 py-0.5 rounded-full font-medium ${colorClass}`}>
             {video.category}
