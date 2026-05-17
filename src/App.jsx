@@ -175,42 +175,45 @@ export default function App() {
           </form>
 
           {!isSearchMode && (
-            <div className="flex gap-1.5 overflow-x-auto pb-1 -mx-4 px-4 mb-1.5" style={{scrollbarWidth: 'none', msOverflowStyle: 'none'}}>
-              <button
-                onClick={() => setDateDir(d => d === 'desc' ? 'asc' : 'desc')}
-                className="flex-shrink-0 flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium bg-gray-700 text-white"
-              >
-                <svg className={`w-3 h-3 transition-transform ${dateDir === 'asc' ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4h13M3 8h9M3 12h5m8 0l4-4m0 0l4 4m-4-4v12"/>
-                </svg>
-                {dateDir === 'desc' ? '新しい順' : '古い順'}
-              </button>
-              <button
-                onClick={() => setRatingDir(d => d === 'desc' ? 'asc' : 'desc')}
-                className="flex-shrink-0 flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium bg-gray-700 text-white"
-              >
-                <svg className="w-3 h-3" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-                </svg>
-                {ratingDir === 'desc' ? '高い順' : '低い順'}
-              </button>
-              <div className="w-px bg-gray-200 mx-1 self-stretch flex-shrink-0" />
-              {[0, 5, 6, 7, 8, 9].map(r => (
+            <div className="overflow-x-auto -mx-4 px-4 mb-1.5" style={{scrollbarWidth: 'none', msOverflowStyle: 'none'}}>
+              <div className="flex gap-1.5 w-max pb-1">
                 <button
-                  key={r}
-                  onClick={() => setMinRating(r)}
-                  className={`flex-shrink-0 px-3 py-1 rounded-full text-xs font-medium transition-colors ${
-                    minRating === r ? 'bg-amber-400 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                  }`}
+                  onClick={() => setDateDir(d => d === 'desc' ? 'asc' : 'desc')}
+                  className="flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium bg-gray-700 text-white"
                 >
-                  {r === 0 ? 'すべて' : `★${r}以上`}
+                  <svg className={`w-3 h-3 transition-transform ${dateDir === 'asc' ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4h13M3 8h9M3 12h5m8 0l4-4m0 0l4 4m-4-4v12"/>
+                  </svg>
+                  {dateDir === 'desc' ? '新しい順' : '古い順'}
                 </button>
-              ))}
+                <button
+                  onClick={() => setRatingDir(d => d === 'desc' ? 'asc' : 'desc')}
+                  className="flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium bg-gray-700 text-white"
+                >
+                  <svg className="w-3 h-3" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                  </svg>
+                  {ratingDir === 'desc' ? '高い順' : '低い順'}
+                </button>
+                <div className="w-px bg-gray-200 mx-1 self-stretch" />
+                {[0, 5, 6, 7, 8, 9].map(r => (
+                  <button
+                    key={r}
+                    onClick={() => setMinRating(r)}
+                    className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
+                      minRating === r ? 'bg-amber-400 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                    }`}
+                  >
+                    {r === 0 ? 'すべて' : `★${r}以上`}
+                  </button>
+                ))}
+              </div>
             </div>
           )}
 
           {!isSearchMode && categories.length > 0 && (
-            <div className="flex gap-2 overflow-x-auto pb-1 -mx-4 px-4" style={{scrollbarWidth: 'none', msOverflowStyle: 'none'}}>
+            <div className="overflow-x-auto -mx-4 px-4" style={{scrollbarWidth: 'none', msOverflowStyle: 'none'}}>
+              <div className="flex gap-2 w-max pb-1">
               <button
                 onClick={() => setSelectedCategories(new Set())}
                 className={`flex-shrink-0 px-3 py-1 rounded-full text-xs font-medium transition-colors ${
@@ -227,13 +230,14 @@ export default function App() {
                     next.has(cat) ? next.delete(cat) : next.add(cat)
                     return next
                   })}
-                  className={`flex-shrink-0 px-3 py-1 rounded-full text-xs font-medium transition-colors ${
+                  className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
                     selectedCategories.has(cat) ? 'bg-red-500 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                   }`}
                 >
                   {cat}
                 </button>
               ))}
+              </div>
             </div>
           )}
         </div>
