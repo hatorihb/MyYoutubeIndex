@@ -20,7 +20,7 @@ export default function App() {
   const [isSearchMode, setIsSearchMode] = useState(false)
   const [selectedCategories, setSelectedCategories] = useState(new Set())
   const [sortOrder, setSortOrder] = useState('newest')
-  const [minRating, setMinRating] = useState(0)
+  const [minRating, setMinRating] = useState(8)
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
