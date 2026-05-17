@@ -3,6 +3,7 @@ import { supabase } from './lib/supabase'
 import VideoCard from './components/VideoCard'
 import AddVideoModal from './components/AddVideoModal'
 import VideoDetailModal from './components/VideoDetailModal'
+import ScrollRow from './components/ScrollRow'
 
 export default function App() {
   const [session, setSession] = useState(null)
@@ -175,8 +176,8 @@ export default function App() {
           </form>
 
           {!isSearchMode && (
-            <div className="overflow-x-auto -mx-4 px-4 mb-1.5" style={{scrollbarWidth: 'none', msOverflowStyle: 'none'}}>
-              <div className="flex gap-1.5 w-max pb-1">
+            <div className="mb-1.5">
+              <ScrollRow gap="gap-1.5">
                 <button
                   onClick={() => setDateDir(d => d === 'desc' ? 'asc' : 'desc')}
                   className="flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium bg-gray-700 text-white"
@@ -207,16 +208,15 @@ export default function App() {
                     {r === 0 ? 'すべて' : `★${r}以上`}
                   </button>
                 ))}
-              </div>
+              </ScrollRow>
             </div>
           )}
 
           {!isSearchMode && categories.length > 0 && (
-            <div className="overflow-x-auto -mx-4 px-4" style={{scrollbarWidth: 'none', msOverflowStyle: 'none'}}>
-              <div className="flex gap-2 w-max pb-1">
+            <ScrollRow>
               <button
                 onClick={() => setSelectedCategories(new Set())}
-                className={`flex-shrink-0 px-3 py-1 rounded-full text-xs font-medium transition-colors ${
+                className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
                   selectedCategories.size === 0 ? 'bg-red-500 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                 }`}
               >
@@ -237,8 +237,7 @@ export default function App() {
                   {cat}
                 </button>
               ))}
-              </div>
-            </div>
+            </ScrollRow>
           )}
         </div>
       </header>
