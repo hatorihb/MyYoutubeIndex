@@ -22,7 +22,7 @@ export default function App() {
   const [selectedCategories, setSelectedCategories] = useState(new Set())
   const [ratingDir, setRatingDir] = useState('desc')
   const [dateDir, setDateDir] = useState('desc')
-  const [minRating, setMinRating] = useState(8)
+  const [selectedRatings, setSelectedRatings] = useState(new Set([8, 9, 10]))
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -62,7 +62,7 @@ export default function App() {
   const displayedVideos = useMemo(() => {
     if (isSearchMode) return searchResults
     let base = selectedCategories.size > 0 ? videos.filter(v => selectedCategories.has(v.category)) : videos
-    if (minRating > 0) base = base.filter(v => (v.rating ?? 0) >= minRating)
+    if (selectedRatings.size > 0) base = base.filter(v => selectedRatings.has(v.rating ?? 0))
     return [...base].sort((a, b) => {
       const rDiff = ratingDir === 'desc'
         ? (b.rating ?? 0) - (a.rating ?? 0)
@@ -71,7 +71,7 @@ export default function App() {
       const dA = new Date(a.created_at), dB = new Date(b.created_at)
       return dateDir === 'desc' ? dB - dA : dA - dB
     })
-  }, [isSearchMode, searchResults, selectedCategories, videos, ratingDir, dateDir, minRating])
+  }, [isSearchMode, searchResults, selectedCategories, videos, ratingDir, dateDir, selectedRatings])
 
   const handleSearch = async (e) => {
     e.preventDefault()
@@ -82,6 +82,7 @@ export default function App() {
     setSearching(true)
     setIsSearchMode(true)
     setSelectedCategories(new Set())
+    setSelectedRatings(new Set())
     const { data } = await supabase.functions.invoke('search-videos', {
       body: { query: searchQuery },
     })
@@ -197,15 +198,27 @@ export default function App() {
                   {ratingDir === 'desc' ? '高い順' : '低い順'}
                 </button>
                 <div className="w-px bg-gray-200 mx-1 self-stretch" />
-                {[0, 5, 6, 7, 8, 9].map(r => (
+                <button
+                  onClick={() => setSelectedRatings(new Set())}
+                  className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
+                    selectedRatings.size === 0 ? 'bg-amber-400 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  }`}
+                >
+                  すべて
+                </button>
+                {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(r => (
                   <button
                     key={r}
-                    onClick={() => setMinRating(r)}
+                    onClick={() => setSelectedRatings(prev => {
+                      const next = new Set(prev)
+                      next.has(r) ? next.delete(r) : next.add(r)
+                      return next
+                    })}
                     className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
-                      minRating === r ? 'bg-amber-400 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                      selectedRatings.has(r) ? 'bg-amber-400 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                     }`}
                   >
-                    {r === 0 ? 'すべて' : `★${r}以上`}
+                    ★{r}
                   </button>
                 ))}
               </ScrollRow>

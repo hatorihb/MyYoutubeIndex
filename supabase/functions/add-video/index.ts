@@ -34,6 +34,19 @@ Deno.serve(async (req) => {
 
     // Step 1: analyze (with or without preview flag)
     const youtubeId = extractYoutubeId(url)
+
+    // Duplicate check before expensive API calls
+    const dupRes = await fetch(
+      `${SUPABASE_URL}/rest/v1/videos?youtube_id=eq.${youtubeId}&select=id&limit=1`,
+      { headers: { 'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`, 'apikey': SUPABASE_SERVICE_ROLE_KEY } }
+    )
+    const dupData = await dupRes.json()
+    if (Array.isArray(dupData) && dupData.length > 0) {
+      return new Response(JSON.stringify({ error: 'この動画はすでに登録されています' }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
+
     const YOUTUBE_API_KEY = Deno.env.get('YOUTUBE_API_KEY')!
     const GROQ_API_KEY = Deno.env.get('GROQ_API_KEY')!
 
