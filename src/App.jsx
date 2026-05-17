@@ -177,15 +177,6 @@ export default function App() {
           {!isSearchMode && (
             <div className="flex gap-1.5 overflow-x-auto pb-1 -mx-4 px-4 mb-1.5" style={{scrollbarWidth: 'none', msOverflowStyle: 'none'}}>
               <button
-                onClick={() => setRatingDir(d => d === 'desc' ? 'asc' : 'desc')}
-                className="flex-shrink-0 flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium bg-gray-700 text-white"
-              >
-                <svg className="w-3 h-3" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-                </svg>
-                {ratingDir === 'desc' ? '高い順' : '低い順'}
-              </button>
-              <button
                 onClick={() => setDateDir(d => d === 'desc' ? 'asc' : 'desc')}
                 className="flex-shrink-0 flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium bg-gray-700 text-white"
               >
@@ -193,6 +184,15 @@ export default function App() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4h13M3 8h9M3 12h5m8 0l4-4m0 0l4 4m-4-4v12"/>
                 </svg>
                 {dateDir === 'desc' ? '新しい順' : '古い順'}
+              </button>
+              <button
+                onClick={() => setRatingDir(d => d === 'desc' ? 'asc' : 'desc')}
+                className="flex-shrink-0 flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium bg-gray-700 text-white"
+              >
+                <svg className="w-3 h-3" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                </svg>
+                {ratingDir === 'desc' ? '高い順' : '低い順'}
               </button>
               <div className="w-px bg-gray-200 mx-1 self-stretch flex-shrink-0" />
               {[0, 5, 6, 7, 8, 9].map(r => (
