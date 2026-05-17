@@ -62,7 +62,8 @@ export default function App() {
   const displayedVideos = useMemo(() => {
     if (isSearchMode) return searchResults
     let base = selectedCategories.size > 0 ? videos.filter(v => selectedCategories.has(v.category)) : videos
-    if (selectedRatings.size > 0) base = base.filter(v => selectedRatings.has(v.rating ?? 0))
+    if (selectedRatings.size === 0) return []
+    base = base.filter(v => selectedRatings.has(v.rating ?? 0))
     return [...base].sort((a, b) => {
       const rDiff = ratingDir === 'desc'
         ? (b.rating ?? 0) - (a.rating ?? 0)
