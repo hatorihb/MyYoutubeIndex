@@ -19,7 +19,7 @@ export default function App() {
   const [searching, setSearching] = useState(false)
   const [isSearchMode, setIsSearchMode] = useState(false)
   const [selectedCategories, setSelectedCategories] = useState(new Set())
-  const [sortOrder, setSortOrder] = useState('newest')
+  const [sortOrder, setSortOrder] = useState('rating')
   const [minRating, setMinRating] = useState(8)
 
   useEffect(() => {
@@ -62,7 +62,9 @@ export default function App() {
     let base = selectedCategories.size > 0 ? videos.filter(v => selectedCategories.has(v.category)) : videos
     if (minRating > 0) base = base.filter(v => (v.rating ?? 0) >= minRating)
     if (sortOrder === 'oldest') return [...base].reverse()
-    if (sortOrder === 'rating') return [...base].sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0))
+    if (sortOrder === 'rating') return [...base].sort((a, b) =>
+      (b.rating ?? 0) - (a.rating ?? 0) || new Date(b.created_at) - new Date(a.created_at)
+    )
     return base
   }, [isSearchMode, searchResults, selectedCategories, videos, sortOrder, minRating])
 
