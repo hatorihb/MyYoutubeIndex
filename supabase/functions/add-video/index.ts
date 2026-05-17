@@ -51,7 +51,7 @@ Deno.serve(async (req) => {
 
     const snippet = ytData.items[0].snippet
 
-    const groqPrompt = `以下のYouTube動画を日本語で分析してください。\nタイトル: ${snippet.title}\n説明: ${snippet.description?.substring(0, 800) || ''}\n\n以下のJSON形式のみで回答してください（他のテキスト不要）：\n{"category":"カテゴリ（AI｜社会・未来/AI｜働き方・変革/AI｜ツール・実践/AI｜モデル・動向/AI｜ニュース（TBS）/AI｜ニュース（いけとも）/AI｜1人起業/Claude｜全般/Claude｜アプリ開発/Claude｜デザイン/技術・開発/育成｜組織・マネジメント/育成｜個人成長/キャリア・自己啓発/リーダーシップ・マネジメント/業務プロセス変革/教養・リベラルアーツ/人生観・メンタル/時事ネタ/その他）","summary":"100文字程度の日本語要約"}`
+    const groqPrompt = `以下のYouTube動画を日本語で分析してください。\nタイトル: ${snippet.title}\n説明: ${snippet.description?.substring(0, 800) || ''}\n\n以下のJSON形式のみで回答してください（他のテキスト不要）：\n{"category":"カテゴリ（AI｜社会・未来/AI｜働き方・変革/AI｜ツール・実践/AI｜モデル・動向/AI｜ニュース（TBS）/AI｜ニュース（いけとも）/AI｜1人起業/Claude｜全般/Claude｜アプリ開発/Claude｜デザイン/技術・開発/育成｜組織・マネジメント/育成｜個人成長/キャリア・自己啓発/リーダーシップ・マネジメント/業務プロセス変革/教養・リベラルアーツ/人生観・メンタル/時事ネタ/災害/その他）","summary":"100文字程度の日本語要約"}`
 
     const groqRes = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
