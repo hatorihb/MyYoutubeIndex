@@ -19,7 +19,7 @@ export default function AddVideoModal({ onClose, onAdded }) {
   const [error, setError] = useState('')
   const [previewData, setPreviewData] = useState(null)
   const [confirmedCategory, setConfirmedCategory] = useState('')
-  const [confirmedRating, setConfirmedRating] = useState(8)
+  const [confirmedRating, setConfirmedRating] = useState(7)
 
   const handleAnalyze = async (e) => {
     e.preventDefault()
@@ -39,7 +39,7 @@ export default function AddVideoModal({ onClose, onAdded }) {
 
     setPreviewData(data)
     setConfirmedCategory(data.category || '')
-    setConfirmedRating(data.rating ?? 8)
+    setConfirmedRating(data.rating ?? 7)
     setLoading(false)
   }
 
