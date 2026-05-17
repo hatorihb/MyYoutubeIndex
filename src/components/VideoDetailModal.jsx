@@ -24,6 +24,9 @@ export default function VideoDetailModal({ video, onClose, onDeleted, onCategory
   const [category, setCategory] = useState(video.category || '')
   const [editingCategory, setEditingCategory] = useState(false)
   const [rating, setRating] = useState(video.rating ?? 8)
+  const [siteUrl, setSiteUrl] = useState(video.site_url || '')
+  const [editingSiteUrl, setEditingSiteUrl] = useState(false)
+  const [siteUrlInput, setSiteUrlInput] = useState(video.site_url || '')
 
   const handleDelete = async () => {
     if (!confirm(`「${video.title}」を削除しますか？`)) return
@@ -47,6 +50,13 @@ export default function VideoDetailModal({ video, onClose, onDeleted, onCategory
       setCategory(newCategory)
       onCategoryChanged?.(newCategory)
     }
+  }
+
+  const handleSiteUrlSave = async () => {
+    setEditingSiteUrl(false)
+    const url = siteUrlInput.trim()
+    await supabase.from('videos').update({ site_url: url || null }).eq('id', video.id)
+    setSiteUrl(url)
   }
 
   useEffect(() => {
@@ -206,6 +216,56 @@ export default function VideoDetailModal({ video, onClose, onDeleted, onCategory
               ))}
             </div>
           )}
+
+          <div className="mb-4">
+            {editingSiteUrl ? (
+              <div className="flex gap-2">
+                <input
+                  autoFocus
+                  type="url"
+                  value={siteUrlInput}
+                  onChange={e => setSiteUrlInput(e.target.value)}
+                  onBlur={handleSiteUrlSave}
+                  onKeyDown={e => { if (e.key === 'Enter') handleSiteUrlSave(); if (e.key === 'Escape') setEditingSiteUrl(false) }}
+                  placeholder="https://..."
+                  className="flex-1 text-sm px-3 py-1.5 border border-blue-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-400"
+                  style={{ fontSize: '16px' }}
+                />
+              </div>
+            ) : siteUrl ? (
+              <a
+                href={siteUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 w-full py-2.5 border border-blue-500 text-blue-500 rounded-xl text-sm font-medium justify-center hover:bg-blue-50 transition-colors"
+                onClick={e => { if (e.metaKey || e.ctrlKey) return; }}
+              >
+                <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                </svg>
+                <span className="truncate">{siteUrl.replace(/^https?:\/\//, '').replace(/\/$/, '')}</span>
+                <button
+                  type="button"
+                  onClick={e => { e.preventDefault(); setSiteUrlInput(siteUrl); setEditingSiteUrl(true) }}
+                  className="ml-auto flex-shrink-0 text-blue-300 hover:text-blue-500"
+                >
+                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536M9 13l6.586-6.586a2 2 0 112.828 2.828L11.828 15.828a2 2 0 01-1.414.586H8v-2.414a2 2 0 01.586-1.414z" />
+                  </svg>
+                </button>
+              </a>
+            ) : (
+              <button
+                onClick={() => { setSiteUrlInput(''); setEditingSiteUrl(true) }}
+                className="flex items-center gap-2 w-full py-2.5 border border-dashed border-gray-300 text-gray-400 rounded-xl text-sm justify-center hover:border-blue-400 hover:text-blue-400 transition-colors"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                </svg>
+                関連サイトを追加
+              </button>
+            )}
+          </div>
 
           <a
             href={`https://www.youtube.com/watch?v=${video.youtube_id}`}
