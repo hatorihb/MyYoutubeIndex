@@ -199,9 +199,11 @@ export default function App() {
                 </button>
                 <div className="w-px bg-gray-200 mx-1 self-stretch" />
                 <button
-                  onClick={() => setSelectedRatings(new Set())}
+                  onClick={() => setSelectedRatings(prev =>
+                    prev.size === 10 ? new Set() : new Set([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
+                  )}
                   className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
-                    selectedRatings.size === 0 ? 'bg-amber-400 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                    selectedRatings.size === 10 ? 'bg-amber-400 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                   }`}
                 >
                   すべて
