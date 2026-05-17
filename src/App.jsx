@@ -129,7 +129,7 @@ export default function App() {
               </svg>
             </div>
             <h1 className="text-lg font-bold text-gray-900">MyYoutubeIndex</h1>
-            <span className="ml-auto text-xs text-gray-400">{videos.length}本</span>
+            <span className="ml-auto text-xs text-gray-400">{displayedVideos.length}本</span>
             <button
               onClick={() => supabase.auth.signOut()}
               className="text-xs text-gray-400 hover:text-gray-600"
