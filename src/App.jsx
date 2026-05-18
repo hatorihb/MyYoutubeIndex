@@ -20,6 +20,7 @@ export default function App() {
   const [searching, setSearching] = useState(false)
   const [isSearchMode, setIsSearchMode] = useState(false)
   const [selectedCategories, setSelectedCategories] = useState(new Set())
+  const [primarySort, setPrimarySort] = useState('date')
   const [ratingDir, setRatingDir] = useState('desc')
   const [dateDir, setDateDir] = useState('desc')
   const [selectedRatings, setSelectedRatings] = useState(new Set([8, 9, 10]))
@@ -65,14 +66,16 @@ export default function App() {
     if (selectedRatings.size === 0) return []
     base = base.filter(v => selectedRatings.has(v.rating ?? 0))
     return [...base].sort((a, b) => {
+      const dA = new Date(a.created_at), dB = new Date(b.created_at)
+      const dateDiff = dateDir === 'desc' ? dB - dA : dA - dB
       const rDiff = ratingDir === 'desc'
         ? (b.rating ?? 0) - (a.rating ?? 0)
         : (a.rating ?? 0) - (b.rating ?? 0)
-      if (rDiff !== 0) return rDiff
-      const dA = new Date(a.created_at), dB = new Date(b.created_at)
-      return dateDir === 'desc' ? dB - dA : dA - dB
+      return primarySort === 'date'
+        ? (dateDiff !== 0 ? dateDiff : rDiff)
+        : (rDiff !== 0 ? rDiff : dateDiff)
     })
-  }, [isSearchMode, searchResults, selectedCategories, videos, ratingDir, dateDir, selectedRatings])
+  }, [isSearchMode, searchResults, selectedCategories, videos, primarySort, ratingDir, dateDir, selectedRatings])
 
   const handleSearch = async (e) => {
     e.preventDefault()
@@ -181,8 +184,13 @@ export default function App() {
             <div className="mb-1.5">
               <ScrollRow gap="gap-1.5">
                 <button
-                  onClick={() => setDateDir(d => d === 'desc' ? 'asc' : 'desc')}
-                  className="flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium bg-gray-700 text-white"
+                  onClick={() => {
+                    if (primarySort !== 'date') setPrimarySort('date')
+                    else setDateDir(d => d === 'desc' ? 'asc' : 'desc')
+                  }}
+                  className={`flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium transition-colors ${
+                    primarySort === 'date' ? 'bg-gray-700 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  }`}
                 >
                   <svg className={`w-3 h-3 transition-transform ${dateDir === 'asc' ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4h13M3 8h9M3 12h5m8 0l4-4m0 0l4 4m-4-4v12"/>
@@ -190,8 +198,13 @@ export default function App() {
                   {dateDir === 'desc' ? '新しい順' : '古い順'}
                 </button>
                 <button
-                  onClick={() => setRatingDir(d => d === 'desc' ? 'asc' : 'desc')}
-                  className="flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium bg-gray-700 text-white"
+                  onClick={() => {
+                    if (primarySort !== 'rating') setPrimarySort('rating')
+                    else setRatingDir(d => d === 'desc' ? 'asc' : 'desc')
+                  }}
+                  className={`flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium transition-colors ${
+                    primarySort === 'rating' ? 'bg-gray-700 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  }`}
                 >
                   <svg className="w-3 h-3" viewBox="0 0 24 24" fill="currentColor">
                     <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
