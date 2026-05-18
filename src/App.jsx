@@ -20,9 +20,8 @@ export default function App() {
   const [searching, setSearching] = useState(false)
   const [isSearchMode, setIsSearchMode] = useState(false)
   const [selectedCategories, setSelectedCategories] = useState(new Set())
-  const [primarySort, setPrimarySort] = useState('date')
-  const [ratingDir, setRatingDir] = useState('desc')
-  const [dateDir, setDateDir] = useState('desc')
+  const [dateSort, setDateSort] = useState('desc')
+  const [ratingSort, setRatingSort] = useState('desc')
   const [selectedRatings, setSelectedRatings] = useState(new Set([8, 9, 10]))
 
   useEffect(() => {
@@ -67,15 +66,11 @@ export default function App() {
     base = base.filter(v => selectedRatings.has(v.rating ?? 0))
     return [...base].sort((a, b) => {
       const dA = new Date(a.created_at), dB = new Date(b.created_at)
-      const dateDiff = dateDir === 'desc' ? dB - dA : dA - dB
-      const rDiff = ratingDir === 'desc'
-        ? (b.rating ?? 0) - (a.rating ?? 0)
-        : (a.rating ?? 0) - (b.rating ?? 0)
-      return primarySort === 'date'
-        ? (dateDiff !== 0 ? dateDiff : rDiff)
-        : (rDiff !== 0 ? rDiff : dateDiff)
+      const dateDiff = dateSort ? (dateSort === 'desc' ? dB - dA : dA - dB) : 0
+      const rDiff = ratingSort ? (ratingSort === 'desc' ? (b.rating ?? 0) - (a.rating ?? 0) : (a.rating ?? 0) - (b.rating ?? 0)) : 0
+      return dateDiff !== 0 ? dateDiff : rDiff
     })
-  }, [isSearchMode, searchResults, selectedCategories, videos, primarySort, ratingDir, dateDir, selectedRatings])
+  }, [isSearchMode, searchResults, selectedCategories, videos, dateSort, ratingSort, selectedRatings])
 
   const handleSearch = async (e) => {
     e.preventDefault()
@@ -184,32 +179,26 @@ export default function App() {
             <div className="mb-1.5">
               <ScrollRow gap="gap-1.5">
                 <button
-                  onClick={() => {
-                    if (primarySort !== 'date') setPrimarySort('date')
-                    else setDateDir(d => d === 'desc' ? 'asc' : 'desc')
-                  }}
+                  onClick={() => setDateSort(d => d === 'desc' ? 'asc' : d === 'asc' ? null : 'desc')}
                   className={`flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium transition-colors ${
-                    primarySort === 'date' ? 'bg-gray-700 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                    dateSort ? 'bg-gray-700 text-white' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
                   }`}
                 >
-                  <svg className={`w-3 h-3 transition-transform ${dateDir === 'asc' ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className={`w-3 h-3 transition-transform ${dateSort === 'asc' ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4h13M3 8h9M3 12h5m8 0l4-4m0 0l4 4m-4-4v12"/>
                   </svg>
-                  {dateDir === 'desc' ? '新しい順' : '古い順'}
+                  {dateSort === 'asc' ? '古い順' : '新しい順'}
                 </button>
                 <button
-                  onClick={() => {
-                    if (primarySort !== 'rating') setPrimarySort('rating')
-                    else setRatingDir(d => d === 'desc' ? 'asc' : 'desc')
-                  }}
+                  onClick={() => setRatingSort(d => d === 'desc' ? 'asc' : d === 'asc' ? null : 'desc')}
                   className={`flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium transition-colors ${
-                    primarySort === 'rating' ? 'bg-gray-700 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                    ratingSort ? 'bg-gray-700 text-white' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
                   }`}
                 >
                   <svg className="w-3 h-3" viewBox="0 0 24 24" fill="currentColor">
                     <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
                   </svg>
-                  {ratingDir === 'desc' ? '高い順' : '低い順'}
+                  {ratingSort === 'asc' ? '低い順' : '高い順'}
                 </button>
                 <div className="w-px bg-gray-200 mx-1 self-stretch" />
                 <button
