@@ -50,6 +50,25 @@ Deno.serve(async (req) => {
     const YOUTUBE_API_KEY = Deno.env.get('YOUTUBE_API_KEY')!
     const GROQ_API_KEY = Deno.env.get('GROQ_API_KEY')!
 
+    // Fetch one high-rated example per category for few-shot prompting
+    const examplesRes = await fetch(
+      `${SUPABASE_URL}/rest/v1/videos?select=title,category&category=not.is.null&order=rating.desc&limit=100`,
+      { headers: { 'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`, 'apikey': SUPABASE_SERVICE_ROLE_KEY } }
+    )
+    const examplesData: { title: string; category: string }[] = await examplesRes.json()
+
+    // Pick the highest-rated example per category
+    const seenCategories = new Set<string>()
+    const examples = examplesData.filter(v => {
+      if (seenCategories.has(v.category)) return false
+      seenCategories.add(v.category)
+      return true
+    })
+
+    const examplesBlock = examples.length > 0
+      ? `\n\n## 分類済み動画の実例（参考にしてください）:\n${examples.map(v => `- 「${v.title}」→ ${v.category}`).join('\n')}`
+      : ''
+
     const ytRes = await fetch(
       `https://www.googleapis.com/youtube/v3/videos?id=${youtubeId}&part=snippet,contentDetails&key=${YOUTUBE_API_KEY}`
     )
@@ -64,7 +83,16 @@ Deno.serve(async (req) => {
 
     const snippet = ytData.items[0].snippet
 
-    const groqPrompt = `以下のYouTube動画を日本語で分析してください。\nタイトル: ${snippet.title}\n説明: ${snippet.description?.substring(0, 800) || ''}\n\n以下のJSON形式のみで回答してください（他のテキスト不要）：\n{"category":"カテゴリ（AI｜社会・未来/AI｜働き方・変革/AI｜ツール・実践/AI｜モデル・動向/AI｜ニュース（TBS）/AI｜ニュース（いけとも）/AI｜1人起業/Claude｜全般/Claude｜アプリ開発/Claude｜デザイン/技術・開発/育成｜組織・マネジメント/育成｜個人成長/キャリア・自己啓発/リーダーシップ・マネジメント/業務プロセス変革/教養・リベラルアーツ/人生観・メンタル/時事ネタ/災害/その他）","summary":"100文字程度の日本語要約"}`
+    const groqPrompt = `以下のYouTube動画を日本語で分析してください。
+タイトル: ${snippet.title}
+説明: ${snippet.description?.substring(0, 800) || ''}${examplesBlock}
+
+## カテゴリ一覧
+AI｜社会・未来/AI｜働き方・変革/AI｜ツール・実践/AI｜モデル・動向/AI｜ニュース（TBS）/AI｜ニュース（いけとも）/AI｜1人起業/Claude｜全般/Claude｜アプリ開発/Claude｜デザイン/技術・開発/育成｜組織・マネジメント/育成｜個人成長/キャリア・自己啓発/リーダーシップ・マネジメント/業務プロセス変革/教養・リベラルアーツ/人生観・メンタル/時事ネタ/災害/その他
+
+上記カテゴリ一覧と実例を参考に、最も適切なカテゴリを選んでください。
+以下のJSON形式のみで回答してください（他のテキスト不要）：
+{"category":"カテゴリ名","summary":"100文字程度の日本語要約"}`
 
     const groqRes = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
