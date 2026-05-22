@@ -50,23 +50,24 @@ Deno.serve(async (req) => {
     const YOUTUBE_API_KEY = Deno.env.get('YOUTUBE_API_KEY')!
     const GROQ_API_KEY = Deno.env.get('GROQ_API_KEY')!
 
-    // Fetch one high-rated example per category for few-shot prompting
+    // Fetch top-3 high-rated examples per category for few-shot prompting (include channel)
     const examplesRes = await fetch(
-      `${SUPABASE_URL}/rest/v1/videos?select=title,category&category=not.is.null&order=rating.desc&limit=100`,
+      `${SUPABASE_URL}/rest/v1/videos?select=title,channel,category&category=not.is.null&order=rating.desc&limit=200`,
       { headers: { 'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`, 'apikey': SUPABASE_SERVICE_ROLE_KEY } }
     )
-    const examplesData: { title: string; category: string }[] = await examplesRes.json()
+    const examplesData: { title: string; channel: string; category: string }[] = await examplesRes.json()
 
-    // Pick the highest-rated example per category
-    const seenCategories = new Set<string>()
+    // Pick up to 3 highest-rated examples per category
+    const categoryCount = new Map<string, number>()
     const examples = examplesData.filter(v => {
-      if (seenCategories.has(v.category)) return false
-      seenCategories.add(v.category)
+      const count = categoryCount.get(v.category) ?? 0
+      if (count >= 3) return false
+      categoryCount.set(v.category, count + 1)
       return true
     })
 
     const examplesBlock = examples.length > 0
-      ? `\n\n## 分類済み動画の実例（参考にしてください）:\n${examples.map(v => `- 「${v.title}」→ ${v.category}`).join('\n')}`
+      ? `\n\n## 分類済み動画の実例（参考にしてください）:\n${examples.map(v => `- 「${v.title}」（${v.channel}）→ ${v.category}`).join('\n')}`
       : ''
 
     const ytRes = await fetch(
@@ -83,15 +84,37 @@ Deno.serve(async (req) => {
 
     const snippet = ytData.items[0].snippet
 
-    const groqPrompt = `以下のYouTube動画を日本語で分析してください。
+    const groqPrompt = `あなたはYouTube動画の分類専門家です。以下の動画を分析し、最も適切なカテゴリを選んでください。
+
+## 分類対象の動画
 タイトル: ${snippet.title}
-説明: ${snippet.description?.substring(0, 800) || ''}${examplesBlock}
+チャンネル: ${snippet.channelTitle}
+説明: ${snippet.description?.substring(0, 1000) || ''}${examplesBlock}
 
-## カテゴリ一覧
-AI｜社会・未来/AI｜働き方・変革/AI｜ツール・実践/AI｜モデル・動向/AI｜ニュース（TBS）/AI｜ニュース（いけとも）/AI｜1人起業/Claude｜全般/Claude｜アプリ開発/Claude｜デザイン/技術・開発/育成｜組織・マネジメント/育成｜個人成長/キャリア・自己啓発/リーダーシップ・マネジメント/業務プロセス変革/教養・リベラルアーツ/人生観・メンタル/時事ネタ/災害/その他
+## カテゴリ定義
+- AI｜社会・未来: AIが社会・経済・未来に与える影響の考察
+- AI｜働き方・変革: AIによる仕事・働き方の変化
+- AI｜ツール・実践: AI活用の具体的な方法・ツール紹介
+- AI｜モデル・動向: AIモデルの技術解説・業界動向
+- AI｜ニュース（TBS）: TBS CROSS DIGによるAIニュース
+- AI｜ニュース（いけとも）: いけともによるAIニュース
+- AI｜1人起業: AIを使った個人起業・副業
+- Claude｜全般: Claudeの概要・使い方全般
+- Claude｜アプリ開発: Claudeを使ったアプリ・システム開発
+- Claude｜デザイン: ClaudeのUI/UXデザイン活用
+- 技術・開発: プログラミング・ソフトウェア開発全般
+- 育成｜組織・マネジメント: チーム・組織の育成・マネジメント
+- 育成｜個人成長: 個人のスキル・能力開発
+- キャリア・自己啓発: キャリア形成・自己成長
+- リーダーシップ・マネジメント: リーダーシップ・経営管理
+- 業務プロセス変革: 業務効率化・DX・プロセス改善
+- 教養・リベラルアーツ: 歴史・哲学・古典・知識教養
+- 人生観・メンタル: 人生哲学・メンタル・生き方
+- 時事ネタ: 社会・政治・経済の時事トピック
+- 災害: 防災・災害情報
+- その他: 上記に当てはまらないもの
 
-上記カテゴリ一覧と実例を参考に、最も適切なカテゴリを選んでください。
-以下のJSON形式のみで回答してください（他のテキスト不要）：
+以下のJSON形式のみで回答してください（説明不要）：
 {"category":"カテゴリ名","summary":"100文字程度の日本語要約"}`
 
     const groqRes = await fetch('https://api.groq.com/openai/v1/chat/completions', {
@@ -101,9 +124,9 @@ AI｜社会・未来/AI｜働き方・変革/AI｜ツール・実践/AI｜モデ
         'Authorization': `Bearer ${GROQ_API_KEY}`,
       },
       body: JSON.stringify({
-        model: 'llama-3.1-8b-instant',
+        model: 'llama-3.3-70b-versatile',
         messages: [{ role: 'user', content: groqPrompt }],
-        temperature: 0.3,
+        temperature: 0.1,
       }),
     })
     const groqData = await groqRes.json()
