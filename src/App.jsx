@@ -68,7 +68,7 @@ export default function App() {
       const dA = new Date(a.created_at), dB = new Date(b.created_at)
       const dateDiff = dateSort ? (dateSort === 'desc' ? dB - dA : dA - dB) : 0
       const rDiff = ratingSort ? (ratingSort === 'desc' ? (b.rating ?? 0) - (a.rating ?? 0) : (a.rating ?? 0) - (b.rating ?? 0)) : 0
-      return dateDiff !== 0 ? dateDiff : rDiff
+      return rDiff !== 0 ? rDiff : dateDiff
     })
   }, [isSearchMode, searchResults, selectedCategories, videos, dateSort, ratingSort, selectedRatings])
 
