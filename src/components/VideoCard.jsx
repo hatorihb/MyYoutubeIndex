@@ -9,7 +9,7 @@ const categoryColors = {
   'Claude｜全般': 'bg-orange-100 text-orange-700',
   'Claude｜アプリ開発': 'bg-amber-100 text-amber-800',
   'Claude｜デザイン': 'bg-yellow-100 text-yellow-700',
-  '技術・開発': 'bg-slate-100 text-slate-700',
+  '科学': 'bg-slate-100 text-slate-700',
   '育成｜組織・マネジメント': 'bg-purple-100 text-purple-700',
   '育成｜個人成長': 'bg-violet-100 text-violet-700',
   'キャリア・自己啓発': 'bg-amber-100 text-amber-700',
