@@ -55,7 +55,11 @@ export default function App() {
   useEffect(() => { loadVideos() }, [loadVideos])
 
   const categories = useMemo(() =>
-    [...new Set(videos.map(v => v.category).filter(Boolean))].sort(),
+    [...new Set(videos.map(v => v.category).filter(Boolean))].sort((a, b) => {
+      if (a === 'その他') return 1
+      if (b === 'その他') return -1
+      return a.localeCompare(b, 'ja')
+    }),
     [videos]
   )
 
