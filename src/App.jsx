@@ -5,6 +5,17 @@ import AddVideoModal from './components/AddVideoModal'
 import VideoDetailModal from './components/VideoDetailModal'
 import ScrollRow from './components/ScrollRow'
 
+const CATEGORY_ORDER = [
+  'AI｜社会・未来', 'AI｜働き方・変革', 'AI｜ツール・実践', 'AI｜モデル・動向',
+  'AI｜ニュース（TBS）', 'AI｜ニュース（いけとも）', 'AI｜1人起業',
+  'Claude｜全般', 'Claude｜アプリ開発', 'Claude｜デザイン',
+  '科学',
+  '育成｜組織・マネジメント', '育成｜個人成長',
+  'キャリア・自己啓発', 'リーダーシップ・マネジメント', '業務プロセス変革',
+  '教養・リベラルアーツ', '人生観・メンタル',
+  '時事ネタ', '投資', '災害', '英会話', 'その他',
+]
+
 export default function App() {
   const [session, setSession] = useState(null)
   const [authLoading, setAuthLoading] = useState(true)
@@ -56,9 +67,12 @@ export default function App() {
 
   const categories = useMemo(() =>
     [...new Set(videos.map(v => v.category).filter(Boolean))].sort((a, b) => {
-      if (a === 'その他') return 1
-      if (b === 'その他') return -1
-      return a.localeCompare(b, 'ja')
+      const ai = CATEGORY_ORDER.indexOf(a)
+      const bi = CATEGORY_ORDER.indexOf(b)
+      if (ai !== -1 && bi !== -1) return ai - bi
+      if (ai !== -1) return -1
+      if (bi !== -1) return 1
+      return a < b ? -1 : a > b ? 1 : 0
     }),
     [videos]
   )
