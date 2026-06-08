@@ -60,7 +60,8 @@ export default function AddVideoModal({ onClose, onAdded }) {
     if (pendingFiles.length > 0 && data?.id) {
       for (let i = 0; i < pendingFiles.length; i++) {
         const file = pendingFiles[i]
-        const fileName = `${data.id}/${Date.now()}_${i}_${file.name}`
+        const ext = file.name.split('.').pop().toLowerCase()
+        const fileName = `${data.id}/${Date.now()}_${i}.${ext}`
         const { data: storageData, error: storageErr } = await supabase.storage
           .from('notebooks')
           .upload(fileName, file)

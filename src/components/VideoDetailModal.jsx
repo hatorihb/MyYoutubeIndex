@@ -80,7 +80,8 @@ export default function VideoDetailModal({ video, onClose, onDeleted, onCategory
     setUploadError('')
     for (let i = 0; i < selected.length; i++) {
       const file = selected[i]
-      const fileName = `${video.id}/${Date.now()}_${i}_${file.name}`
+      const ext = file.name.split('.').pop().toLowerCase()
+      const fileName = `${video.id}/${Date.now()}_${i}.${ext}`
       const { data: storageData, error: storageErr } = await supabase.storage
         .from('notebooks')
         .upload(fileName, file)
