@@ -21,6 +21,7 @@ const fileIcon = (type) => {
 export default function VideoDetailModal({ video, onClose, onDeleted, onCategoryChanged, onRatingChanged }) {
   const [files, setFiles] = useState([])
   const [uploading, setUploading] = useState(false)
+  const [uploadError, setUploadError] = useState('')
   const [category, setCategory] = useState(video.category || '')
   const [editingCategory, setEditingCategory] = useState(false)
   const [rating, setRating] = useState(video.rating ?? 8)
@@ -76,19 +77,30 @@ export default function VideoDetailModal({ video, onClose, onDeleted, onCategory
     const selected = Array.from(e.target.files)
     if (!selected.length) return
     setUploading(true)
+    setUploadError('')
     for (let i = 0; i < selected.length; i++) {
       const file = selected[i]
       const fileName = `${video.id}/${Date.now()}_${i}_${file.name}`
       const { data: storageData, error: storageErr } = await supabase.storage
         .from('notebooks')
         .upload(fileName, file)
-      if (!storageErr) {
-        await supabase.from('files').insert({
-          video_id: video.id,
-          name: file.name,
-          file_type: file.name.split('.').pop().toLowerCase(),
-          storage_path: storageData.path,
-        })
+      if (storageErr) {
+        setUploadError(`ストレージエラー: ${storageErr.message}`)
+        setUploading(false)
+        e.target.value = ''
+        return
+      }
+      const { error: dbErr } = await supabase.from('files').insert({
+        video_id: video.id,
+        name: file.name,
+        file_type: file.name.split('.').pop().toLowerCase(),
+        storage_path: storageData.path,
+      })
+      if (dbErr) {
+        setUploadError(`DB エラー: ${dbErr.message}`)
+        setUploading(false)
+        e.target.value = ''
+        return
       }
     }
     await loadFiles()
@@ -296,6 +308,10 @@ export default function VideoDetailModal({ video, onClose, onDeleted, onCategory
                 </span>
               </label>
             </div>
+
+            {uploadError && (
+              <p className="text-xs text-red-500 mb-2">{uploadError}</p>
+            )}
 
             {files.length === 0 ? (
               <p className="text-xs text-gray-400 text-center py-4 border-2 border-dashed border-gray-200 rounded-xl">
