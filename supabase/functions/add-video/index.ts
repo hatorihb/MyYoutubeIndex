@@ -99,6 +99,7 @@ Deno.serve(async (req) => {
 - AI｜ニュース（TBS）: TBS CROSS DIGによるAIニュース
 - AI｜ニュース（いけとも）: いけともによるAIニュース
 - AI｜1人起業: AIを使った個人起業・副業
+- フィジカルAI: ロボット・自律システム・AIの物理世界への応用
 - Claude｜全般: Claudeの概要・使い方全般
 - Claude｜アプリ開発: Claudeを使ったアプリ・システム開発
 - Claude｜デザイン: ClaudeのUI/UXデザイン活用
