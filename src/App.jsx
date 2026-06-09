@@ -7,7 +7,7 @@ import ScrollRow from './components/ScrollRow'
 
 const CATEGORY_ORDER = [
   'AI｜社会・未来', 'AI｜働き方・変革', 'AI｜ツール・実践', 'AI｜モデル・動向',
-  'AI｜ニュース（TBS）', 'AI｜ニュース（いけとも）', 'AI｜1人起業',
+  'AI｜ニュース（TBS）', 'AI｜ニュース（いけとも）', 'AI｜1人起業', 'フィジカルAI',
   'Claude｜全般', 'Claude｜アプリ開発', 'Claude｜デザイン',
   '科学',
   '育成｜組織・マネジメント', '育成｜個人成長',
