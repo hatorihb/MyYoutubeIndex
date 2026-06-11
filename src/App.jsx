@@ -229,7 +229,7 @@ export default function App() {
                 >
                   すべて
                 </button>
-                {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(r => (
+                {[10, 9, 8, 7, 6, 5, 4, 3, 2, 1].map(r => (
                   <button
                     key={r}
                     onClick={() => setSelectedRatings(prev => {
