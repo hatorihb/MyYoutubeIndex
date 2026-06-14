@@ -18,6 +18,7 @@ const categoryColors = {
   '教養・リベラルアーツ': 'bg-teal-100 text-teal-700',
   '人生観・メンタル': 'bg-rose-100 text-rose-600',
   '時事ネタ': 'bg-gray-100 text-gray-600',
+  '宇宙': 'bg-violet-100 text-violet-800',
   'その他': 'bg-gray-100 text-gray-500',
 }
 
