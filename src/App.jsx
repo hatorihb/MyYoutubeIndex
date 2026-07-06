@@ -16,6 +16,15 @@ const CATEGORY_ORDER = [
   '時事ネタ', '投資', '災害', '英会話', '宇宙', 'その他',
 ]
 
+const loadPref = (key, fallback) => {
+  try {
+    const raw = localStorage.getItem(key)
+    return raw === null ? fallback : JSON.parse(raw)
+  } catch {
+    return fallback
+  }
+}
+
 export default function App() {
   const [session, setSession] = useState(null)
   const [authLoading, setAuthLoading] = useState(true)
@@ -30,10 +39,19 @@ export default function App() {
   const [searchQuery, setSearchQuery] = useState('')
   const [searching, setSearching] = useState(false)
   const [isSearchMode, setIsSearchMode] = useState(false)
-  const [selectedCategories, setSelectedCategories] = useState(new Set())
-  const [dateSort, setDateSort] = useState('desc')
-  const [ratingSort, setRatingSort] = useState('desc')
-  const [selectedRatings, setSelectedRatings] = useState(new Set([8, 9, 10]))
+  const [selectedCategories, setSelectedCategories] = useState(() => new Set(loadPref('pref_categories', [])))
+  const [dateSort, setDateSort] = useState(() => loadPref('pref_dateSort', 'desc'))
+  const [ratingSort, setRatingSort] = useState(() => loadPref('pref_ratingSort', 'desc'))
+  const [selectedRatings, setSelectedRatings] = useState(() => new Set(loadPref('pref_ratings', [8, 9, 10])))
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('pref_categories', JSON.stringify([...selectedCategories]))
+      localStorage.setItem('pref_dateSort', JSON.stringify(dateSort))
+      localStorage.setItem('pref_ratingSort', JSON.stringify(ratingSort))
+      localStorage.setItem('pref_ratings', JSON.stringify([...selectedRatings]))
+    } catch { /* storage unavailable */ }
+  }, [selectedCategories, dateSort, ratingSort, selectedRatings])
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -77,17 +95,17 @@ export default function App() {
     [videos]
   )
 
-  const displayedVideos = useMemo(() => {
-    if (isSearchMode) return searchResults
-    let base = selectedCategories.size > 0 ? videos.filter(v => selectedCategories.has(v.category)) : videos
-    if (selectedRatings.size === 0) return []
-    base = base.filter(v => selectedRatings.has(v.rating ?? 0))
-    return [...base].sort((a, b) => {
+  const { displayedVideos, hiddenByRating } = useMemo(() => {
+    let base = isSearchMode ? searchResults : videos
+    if (selectedCategories.size > 0) base = base.filter(v => selectedCategories.has(v.category))
+    const filtered = base.filter(v => selectedRatings.has(v.rating ?? 0))
+    const sorted = [...filtered].sort((a, b) => {
       const dA = new Date(a.created_at), dB = new Date(b.created_at)
       const dateDiff = dateSort ? (dateSort === 'desc' ? dB - dA : dA - dB) : 0
       const rDiff = ratingSort ? (ratingSort === 'desc' ? (b.rating ?? 0) - (a.rating ?? 0) : (a.rating ?? 0) - (b.rating ?? 0)) : 0
       return rDiff !== 0 ? rDiff : dateDiff
     })
+    return { displayedVideos: sorted, hiddenByRating: base.length - filtered.length }
   }, [isSearchMode, searchResults, selectedCategories, videos, dateSort, ratingSort, selectedRatings])
 
   const handleSearch = async (e) => {
@@ -98,12 +116,10 @@ export default function App() {
     }
     setSearching(true)
     setIsSearchMode(true)
-    setSelectedCategories(new Set())
-    setSelectedRatings(new Set())
     const { data } = await supabase.functions.invoke('search-videos', {
       body: { query: searchQuery },
     })
-    setSearchResults(data || [])
+    setSearchResults(Array.isArray(data) ? data : [])
     setSearching(false)
   }
 
@@ -113,9 +129,12 @@ export default function App() {
     setSearchResults([])
   }
 
-  const handleVideoAdded = () => {
+  const handleVideoAdded = (video) => {
     loadVideos()
     setShowAddModal(false)
+    // Make sure the newly added video is not hidden by the rating filter
+    const rating = video?.rating ?? 0
+    setSelectedRatings(prev => prev.has(rating) ? prev : new Set([...prev, rating]))
   }
 
   if (authLoading) return (
@@ -154,7 +173,9 @@ export default function App() {
               </svg>
             </div>
             <h1 className="text-lg font-bold text-gray-900">MyYoutubeIndex</h1>
-            <span className="ml-auto text-xs text-gray-400">{displayedVideos.length}本</span>
+            <span className="ml-auto text-xs text-gray-400">
+              {displayedVideos.length === videos.length ? `${videos.length}本` : `${displayedVideos.length} / ${videos.length}本`}
+            </span>
             <button
               onClick={() => supabase.auth.signOut()}
               className="text-xs text-gray-400 hover:text-gray-600"
@@ -193,8 +214,7 @@ export default function App() {
             </button>
           </form>
 
-          {!isSearchMode && (
-            <div className="mb-1.5">
+          <div className="mb-1.5">
               <ScrollRow gap="gap-1.5">
                 <button
                   onClick={() => setDateSort(d => d === 'desc' ? 'asc' : d === 'asc' ? null : 'desc')}
@@ -245,10 +265,9 @@ export default function App() {
                   </button>
                 ))}
               </ScrollRow>
-            </div>
-          )}
+          </div>
 
-          {!isSearchMode && categories.length > 0 && (
+          {categories.length > 0 && (
             <ScrollRow>
               <button
                 onClick={() => setSelectedCategories(new Set())}
@@ -285,6 +304,9 @@ export default function App() {
         {!isSearchMode && selectedCategories.size > 0 && (
           <p className="text-sm text-gray-500 mb-3">{[...selectedCategories].join('・')} — {displayedVideos.length}件</p>
         )}
+        {!searching && hiddenByRating > 0 && (
+          <p className="text-xs text-gray-400 mb-3">★フィルターで{hiddenByRating}本が非表示になっています</p>
+        )}
 
         {searching ? (
           <div className="flex flex-col items-center justify-center py-16 text-gray-400 gap-3">
@@ -301,9 +323,9 @@ export default function App() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M15 10l4.553-2.069A1 1 0 0121 8.82v6.36a1 1 0 01-1.447.894L15 14M3 8a2 2 0 012-2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8z" />
             </svg>
             <p className="font-medium">
-              {isSearchMode ? '該当する動画がありません' : selectedCategories.size > 0 ? '該当する動画がありません' : '動画がありません'}
+              {hiddenByRating > 0 ? '★フィルターで全て非表示になっています' : isSearchMode || selectedCategories.size > 0 ? '該当する動画がありません' : '動画がありません'}
             </p>
-            {!isSearchMode && selectedCategories.size === 0 && <p className="text-sm mt-1">下の＋ボタンから追加しましょう</p>}
+            {!isSearchMode && selectedCategories.size === 0 && hiddenByRating === 0 && <p className="text-sm mt-1">下の＋ボタンから追加しましょう</p>}
           </div>
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
