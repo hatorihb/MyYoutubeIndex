@@ -15,6 +15,8 @@ jobs:
       - uses: supabase/setup-cli@v1
         with:
           version: latest
-      - run: supabase functions deploy add-video --project-ref ${{ secrets.SUPABASE_PROJECT_ID }}
+      # No function name = deploy every function under supabase/functions,
+      # so newly added functions are picked up without editing this workflow.
+      - run: supabase functions deploy --project-ref ${{ secrets.SUPABASE_PROJECT_ID }}
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
