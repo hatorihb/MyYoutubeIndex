@@ -6,6 +6,7 @@ const categoryColors = {
   'AI｜ニュース（TBS）': 'bg-cyan-100 text-cyan-700',
   'AI｜ニュース（いけとも）': 'bg-cyan-100 text-cyan-800',
   'AI｜1人起業': 'bg-orange-100 text-orange-600',
+  'フィジカルAI': 'bg-indigo-100 text-indigo-800',
   'Claude｜全般': 'bg-orange-100 text-orange-700',
   'Claude｜アプリ開発': 'bg-amber-100 text-amber-800',
   'Claude｜デザイン': 'bg-yellow-100 text-yellow-700',
@@ -18,7 +19,10 @@ const categoryColors = {
   '教養・リベラルアーツ': 'bg-teal-100 text-teal-700',
   '人生観・メンタル': 'bg-rose-100 text-rose-600',
   '時事ネタ': 'bg-gray-100 text-gray-600',
+  '投資': 'bg-green-100 text-green-700',
   '金融': 'bg-emerald-100 text-emerald-700',
+  '災害': 'bg-red-100 text-red-700',
+  '英会話': 'bg-pink-100 text-pink-700',
   '宇宙': 'bg-violet-100 text-violet-800',
   'その他': 'bg-gray-100 text-gray-500',
 }
