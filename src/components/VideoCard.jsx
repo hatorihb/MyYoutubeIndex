@@ -17,6 +17,7 @@ const categoryColors = {
   'リーダーシップ・マネジメント': 'bg-purple-100 text-purple-600',
   '業務プロセス変革': 'bg-blue-100 text-blue-600',
   '教養・リベラルアーツ': 'bg-teal-100 text-teal-700',
+  '芸術': 'bg-fuchsia-100 text-fuchsia-700',
   '人生観・メンタル': 'bg-rose-100 text-rose-600',
   '時事ネタ': 'bg-gray-100 text-gray-600',
   '投資': 'bg-green-100 text-green-700',
