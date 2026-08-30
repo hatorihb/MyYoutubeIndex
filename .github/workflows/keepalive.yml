@@ -1,0 +1,68 @@
+name: Supabase Keepalive
+
+# 無料プランのプロジェクトは、一定期間アクティビティがないと自動的に一時停止される。
+# 毎日1回リクエストを送ることで停止を防ぐ。
+#
+# 注意: GitHubはリポジトリに60日間コミットがないとスケジュール実行を自動的に無効化する。
+# 長期間開発が止まる場合は、Actionsタブから手動で再有効化する必要がある。
+
+on:
+  schedule:
+    # 毎日 03:17 UTC（12:17 JST）。毎時0分は混雑して遅延しやすいため意図的にずらしている。
+    - cron: '17 3 * * *'
+  workflow_dispatch:
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      # URLと公開キーはフロントエンドと同じ値を使う。src/lib/supabase.js を
+      # 唯一の情報源にして、ここに複製しない。
+      - name: Read Supabase config from source
+        id: config
+        run: |
+          set -euo pipefail
+          src=src/lib/supabase.js
+          url=$(grep -oP "(?<=const SUPABASE_URL = ')[^']+" "$src" || true)
+          key=$(grep -oP "(?<=const SUPABASE_PUBLISHABLE_KEY = ')[^']+" "$src" || true)
+          if [ -z "$url" ] || [ -z "$key" ]; then
+            echo "::error::$src からURL/キーを読み取れませんでした。定数名が変わっていないか確認してください。"
+            exit 1
+          fi
+          echo "url=$url" >> "$GITHUB_OUTPUT"
+          echo "key=$key" >> "$GITHUB_OUTPUT"
+          echo "Supabase URL: $url"
+
+      - name: Ping the database
+        env:
+          URL: ${{ steps.config.outputs.url }}
+          KEY: ${{ steps.config.outputs.key }}
+        run: |
+          set -uo pipefail
+          code=$(curl -sS -o response.txt -w '%{http_code}' --max-time 30 \
+            "$URL/rest/v1/videos?select=id&limit=1" \
+            -H "apikey: $KEY" -H "Authorization: Bearer $KEY") || code=000
+
+          echo "HTTP $code"
+          echo "response: $(head -c 300 response.txt 2>/dev/null || true)"
+
+          case "$code" in
+            2*)
+              echo "OK: プロジェクトは応答しています。"
+              ;;
+            401|403)
+              # リクエストはプロジェクトに到達しているのでアクティビティとしては有効。
+              # ただしキーかRLSの設定が変わった可能性があるため警告を出す。
+              echo "::warning::プロジェクトには到達しましたが拒否されました（$code）。キーまたはRLS設定を確認してください。"
+              ;;
+            000)
+              echo "::error::プロジェクトから応答がありません。すでに一時停止されているか、ネットワーク障害の可能性があります。"
+              exit 1
+              ;;
+            *)
+              echo "::error::想定外のステータス $code が返りました。"
+              exit 1
+              ;;
+          esac
