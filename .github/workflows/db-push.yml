@@ -1,0 +1,105 @@
+name: Database Migrations
+
+# supabase/migrations/ を Supabase CLI で本番に適用する。
+#
+# 手作業で SQL Editor に貼る運用では「流し忘れ」「別プロジェクトに流した」を
+# 誰も検出できない。CLI は適用済みバージョンを本番の履歴テーブルに記録するため、
+# 何が未適用かが常に確定する。
+#
+# - プルリクエスト: --dry-run で「何が適用されるか」だけ表示（DBは変更しない）
+# - main へのマージ: 実際に適用
+# - 手動実行: list（適用状況の確認） / push / repair（初回の移行用）
+#
+# 必要なシークレット: SUPABASE_DB_URL のみ
+#
+# Supabase の Connect ダイアログで Session pooler を選んで得られる接続文字列。
+# Direct connection (db.xxx.supabase.co) は IPv6 のみで提供されており、
+# GitHub Actions のランナーは IPv4 のみのため接続できない。
+
+on:
+  pull_request:
+    paths:
+      - 'supabase/migrations/**'
+      - '.github/workflows/db-push.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'supabase/migrations/**'
+  workflow_dispatch:
+    inputs:
+      action:
+        description: '実行する操作'
+        type: choice
+        options: [list, push, repair]
+        default: list
+      repair_versions:
+        description: 'repair時のみ: 適用済みとして記録するバージョン（空白区切り）'
+        default: '20240101000000 20240102000000 20240103000000 20240104000000 20240105000000 20240106000000 20240107000000 20240108000000 20240109000000 20240110000000'
+
+concurrency:
+  group: db-migrations
+  cancel-in-progress: false
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+
+    env:
+      DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+
+    steps:
+      - uses: actions/checkout@v5
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Check required secret
+        run: |
+          if [ -z "${DB_URL:-}" ]; then
+            echo "::error::シークレット SUPABASE_DB_URL が未設定です"
+            echo "Supabase の Connect → Session pooler の接続文字列を、"
+            echo "リポジトリの Settings → Secrets and variables → Actions に登録してください。"
+            exit 1
+          fi
+          case "$DB_URL" in
+            *db.*.supabase.co*)
+              echo "::error::Direct connection の接続文字列が設定されています。"
+              echo "これは IPv6 のみのため GitHub Actions からは接続できません。"
+              echo "Connect ダイアログで Session pooler を選び、その接続文字列に差し替えてください。"
+              exit 1 ;;
+          esac
+          echo "SUPABASE_DB_URL は設定されています"
+
+      # 適用状況の確認。どのバージョンが本番に入っているかが一覧で出る。
+      - name: List migration status
+        run: supabase migration list --db-url "$DB_URL"
+
+      # プルリクエストでは実際には流さず、適用されるものだけ見せる
+      - name: Dry run (pull request)
+        if: github.event_name == 'pull_request'
+        run: supabase db push --db-url "$DB_URL" --dry-run
+
+      # main にマージされたら実際に適用する
+      - name: Apply migrations
+        if: github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.action == 'push')
+        run: supabase db push --db-url "$DB_URL"
+
+      # 初回移行用: 手作業で適用済みのマイグレーションを「適用済み」として履歴に記録する。
+      # これをしないと db push が既に流したものを再実行しようとする。
+      - name: Repair migration history (one-time bootstrap)
+        if: github.event_name == 'workflow_dispatch' && inputs.action == 'repair'
+        env:
+          # 入力をスクリプトに直接展開せず環境変数で渡す（インジェクション対策）
+          VERSIONS: ${{ inputs.repair_versions }}
+        run: |
+          set -euo pipefail
+          versions="$VERSIONS"
+          if [ -z "$versions" ]; then
+            echo "::error::repair_versions が空です"
+            exit 1
+          fi
+          echo "適用済みとして記録します: $versions"
+          # shellcheck disable=SC2086
+          supabase migration repair --status applied --db-url "$DB_URL" $versions
+          echo "── 記録後の状態 ──"
+          supabase migration list --db-url "$DB_URL"
