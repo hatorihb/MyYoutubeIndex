@@ -27,6 +27,7 @@ export default function App() {
   const [showAddModal, setShowAddModal] = useState(false)
   const [showCategoryManager, setShowCategoryManager] = useState(false)
   const [categoryRows, setCategoryRows] = useState([])
+  const [ruleRows, setRuleRows] = useState([])
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
   const [searching, setSearching] = useState(false)
@@ -80,6 +81,13 @@ export default function App() {
       .order('sort_order')
       .order('name')
     setCategoryRows(data || [])
+
+    const { data: rules } = await supabase
+      .from('category_rules')
+      .select('id, sort_order, title, body')
+      .order('sort_order')
+      .order('id')
+    setRuleRows(rules || [])
   }, [])
 
   useEffect(() => { loadVideos(); loadCategories() }, [loadVideos, loadCategories])
@@ -359,6 +367,7 @@ export default function App() {
       {showCategoryManager && (
         <CategoryManagerModal
           categories={categoryRows}
+          rules={ruleRows}
           videos={videos}
           onClose={() => setShowCategoryManager(false)}
           onChanged={() => { loadCategories(); loadVideos() }}
