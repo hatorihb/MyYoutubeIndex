@@ -1,0 +1,77 @@
+name: Verify Migrations
+
+# マイグレーションを使い捨てのPostgreSQLに順番どおり適用し、
+# アプリが実際に投げるクエリを authenticated ロールで実行して検証する。
+#
+# スーパーユーザーは権限チェックもRLSも素通りするため、SQLが流せたことだけでは
+# 「アプリから使える」証明にならない。GRANT漏れやRLSポリシーの不足は、
+# 必ず authenticated で叩いて初めて表面化する。
+#
+# 本番のDBには一切接続しない。
+
+on:
+  pull_request:
+    paths:
+      - 'supabase/migrations/**'
+      - 'supabase/tests/**'
+      - '.github/workflows/verify-migrations.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'supabase/migrations/**'
+      - 'supabase/tests/**'
+      - '.github/workflows/verify-migrations.yml'
+  workflow_dispatch:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        # 本番と同じく pgvector を使うため、拡張入りのイメージを使う
+        image: pgvector/pgvector:pg16
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: verify
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      PGHOST: localhost
+      PGPORT: '5432'
+      PGUSER: postgres
+      PGPASSWORD: postgres
+      PGDATABASE: verify
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Install psql
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq postgresql-client
+
+      - name: Set up Supabase-equivalent roles and schemas
+        run: psql -v ON_ERROR_STOP=1 -f supabase/tests/supabase_shim.sql
+
+      - name: Apply migrations in order
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          files=(supabase/migrations/*.sql)
+          if [ ${#files[@]} -eq 0 ]; then
+            echo "::error::マイグレーションが1件も見つかりません"
+            exit 1
+          fi
+          for f in "${files[@]}"; do
+            echo "── $(basename "$f")"
+            psql -v ON_ERROR_STOP=1 -q -f "$f"
+          done
+          echo "${#files[@]} 件すべて適用しました"
+
+      - name: Verify access as the authenticated role
+        run: psql -v ON_ERROR_STOP=1 -f supabase/tests/authenticated_access.sql
