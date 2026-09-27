@@ -28,6 +28,7 @@ export default function App() {
   const [showCategoryManager, setShowCategoryManager] = useState(false)
   const [categoryRows, setCategoryRows] = useState([])
   const [ruleRows, setRuleRows] = useState([])
+  const [categoryError, setCategoryError] = useState('')
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
   const [searching, setSearching] = useState(false)
@@ -75,19 +76,23 @@ export default function App() {
   }, [])
 
   const loadCategories = useCallback(async () => {
-    const { data } = await supabase
+    // 取得できない理由（テーブル未作成・権限・RLS）が分かるようエラーを保持する
+    const { data, error: catErr } = await supabase
       .from('categories')
       .select('name, sort_order, color_key, definition')
       .order('sort_order')
       .order('name')
-    setCategoryRows(data || [])
 
-    const { data: rules } = await supabase
+    const { data: rules, error: ruleErr } = await supabase
       .from('category_rules')
       .select('id, sort_order, title, body')
       .order('sort_order')
       .order('id')
+
+    setCategoryRows(data || [])
     setRuleRows(rules || [])
+    const err = catErr || ruleErr
+    setCategoryError(err ? `${err.message}${err.code ? ` (${err.code})` : ''}` : '')
   }, [])
 
   useEffect(() => { loadVideos(); loadCategories() }, [loadVideos, loadCategories])
@@ -368,6 +373,7 @@ export default function App() {
         <CategoryManagerModal
           categories={categoryRows}
           rules={ruleRows}
+          loadError={categoryError}
           videos={videos}
           onClose={() => setShowCategoryManager(false)}
           onChanged={() => { loadCategories(); loadVideos() }}

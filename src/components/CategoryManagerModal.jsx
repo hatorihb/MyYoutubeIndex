@@ -4,7 +4,7 @@ import { PALETTE_KEYS, colorClassFor } from '../lib/categoryColors'
 
 const FALLBACK = 'その他'
 
-export default function CategoryManagerModal({ categories, rules, videos, onClose, onChanged }) {
+export default function CategoryManagerModal({ categories, rules, videos, loadError = '', onClose, onChanged }) {
   const [tab, setTab] = useState('categories')
   const [editing, setEditing] = useState(null)   // 編集中のカテゴリ名（新規は '')
   const [ruleEditing, setRuleEditing] = useState(null)  // 編集中のルールid（新規は 'new')
@@ -168,6 +168,12 @@ export default function CategoryManagerModal({ categories, rules, videos, onClos
 
         <div className="p-5">
           {error && <p className="text-red-500 text-sm mb-3">{error}</p>}
+          {loadError && (
+            <div className="bg-red-50 border border-red-200 rounded-xl p-3 mb-4">
+              <p className="text-sm font-medium text-red-700 mb-1">カテゴリを読み込めませんでした</p>
+              <p className="text-xs text-red-600 break-all">{loadError}</p>
+            </div>
+          )}
 
           {tab === 'rules' ? (
             <RulesPane
@@ -253,6 +259,10 @@ export default function CategoryManagerModal({ categories, rules, videos, onClos
             >
               ＋ カテゴリを追加
             </button>
+          )}
+
+          {categories.length === 0 && !loadError && (
+            <p className="text-sm text-gray-400 text-center py-6">カテゴリがまだありません</p>
           )}
 
           <ul className="space-y-1">
