@@ -1,24 +1,13 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
 
-const CATEGORIES = [
-  'AI｜社会・未来', 'AI｜働き方・変革', 'AI｜ツール・実践', 'AI｜モデル・動向',
-  'AI｜ニュース（TBS）', 'AI｜ニュース（いけとも）', 'AI｜1人起業', 'フィジカルAI',
-  'Claude｜全般', 'Claude｜アプリ開発', 'Claude｜デザイン',
-  '科学',
-  '育成｜組織・マネジメント', '育成｜個人成長',
-  'キャリア・自己啓発', 'リーダーシップ・マネジメント', '業務プロセス変革',
-  '教養・リベラルアーツ', '芸術', '人生観・メンタル',
-  '時事ネタ', '投資', '金融', '災害', '英会話', '宇宙', 'その他',
-]
-
 const fileIcon = (type) => {
   if (type === 'pdf') return '📄'
   if (['pptx', 'ppt'].includes(type)) return '📊'
   return '📎'
 }
 
-export default function VideoDetailModal({ video, onClose, onDeleted, onCategoryChanged, onRatingChanged }) {
+export default function VideoDetailModal({ video, onClose, onDeleted, onCategoryChanged, onRatingChanged, categories = [] }) {
   const [files, setFiles] = useState([])
   const [uploading, setUploading] = useState(false)
   const [uploadError, setUploadError] = useState('')
@@ -177,7 +166,7 @@ export default function VideoDetailModal({ video, onClose, onDeleted, onCategory
                 onBlur={() => setEditingCategory(false)}
                 className="text-xs border border-red-300 rounded-full px-3 py-1 text-red-700 bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-400"
               >
-                {CATEGORIES.map(cat => (
+                {categories.map(cat => (
                   <option key={cat} value={cat}>{cat}</option>
                 ))}
               </select>
