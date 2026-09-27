@@ -4,17 +4,7 @@ import VideoCard from './components/VideoCard'
 import AddVideoModal from './components/AddVideoModal'
 import VideoDetailModal from './components/VideoDetailModal'
 import ScrollRow from './components/ScrollRow'
-
-const CATEGORY_ORDER = [
-  'AI｜社会・未来', 'AI｜働き方・変革', 'AI｜ツール・実践', 'AI｜モデル・動向',
-  'AI｜ニュース（TBS）', 'AI｜ニュース（いけとも）', 'AI｜1人起業', 'フィジカルAI',
-  'Claude｜全般', 'Claude｜アプリ開発', 'Claude｜デザイン',
-  '科学',
-  '育成｜組織・マネジメント', '育成｜個人成長',
-  'キャリア・自己啓発', 'リーダーシップ・マネジメント', '業務プロセス変革',
-  '教養・リベラルアーツ', '芸術', '人生観・メンタル',
-  '時事ネタ', '投資', '金融', '災害', '英会話', '宇宙', 'その他',
-]
+import CategoryManagerModal from './components/CategoryManagerModal'
 
 const loadPref = (key, fallback) => {
   try {
@@ -35,6 +25,8 @@ export default function App() {
   const [searchResults, setSearchResults] = useState([])
   const [selectedVideo, setSelectedVideo] = useState(null)
   const [showAddModal, setShowAddModal] = useState(false)
+  const [showCategoryManager, setShowCategoryManager] = useState(false)
+  const [categoryRows, setCategoryRows] = useState([])
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
   const [searching, setSearching] = useState(false)
@@ -81,19 +73,31 @@ export default function App() {
     setLoading(false)
   }, [])
 
-  useEffect(() => { loadVideos() }, [loadVideos])
+  const loadCategories = useCallback(async () => {
+    const { data } = await supabase
+      .from('categories')
+      .select('name, sort_order, color_key, definition')
+      .order('sort_order')
+      .order('name')
+    setCategoryRows(data || [])
+  }, [])
 
-  const categories = useMemo(() =>
-    [...new Set(videos.map(v => v.category).filter(Boolean))].sort((a, b) => {
-      const ai = CATEGORY_ORDER.indexOf(a)
-      const bi = CATEGORY_ORDER.indexOf(b)
-      if (ai !== -1 && bi !== -1) return ai - bi
-      if (ai !== -1) return -1
-      if (bi !== -1) return 1
-      return a < b ? -1 : a > b ? 1 : 0
-    }),
-    [videos]
+  useEffect(() => { loadVideos(); loadCategories() }, [loadVideos, loadCategories])
+
+  // 並び順はDBの sort_order に従う
+  const categoryNames = useMemo(() => categoryRows.map(c => c.name), [categoryRows])
+  const colorKeys = useMemo(
+    () => Object.fromEntries(categoryRows.map(c => [c.name, c.color_key])),
+    [categoryRows]
   )
+
+  // フィルターのチップは、実際に動画が登録されているカテゴリのみ表示する
+  const categories = useMemo(() => {
+    const present = new Set(videos.map(v => v.category).filter(Boolean))
+    const known = categoryNames.filter(n => present.has(n))
+    const unknown = [...present].filter(n => !colorKeys[n]).sort()
+    return [...known, ...unknown]
+  }, [videos, categoryNames, colorKeys])
 
   const { displayedVideos, hiddenByRating } = useMemo(() => {
     let base = isSearchMode ? searchResults : videos
@@ -176,6 +180,12 @@ export default function App() {
             <span className="ml-auto text-xs text-gray-400">
               {displayedVideos.length === videos.length ? `${videos.length}本` : `${displayedVideos.length} / ${videos.length}本`}
             </span>
+            <button
+              onClick={() => setShowCategoryManager(true)}
+              className="text-xs text-gray-400 hover:text-gray-600"
+            >
+              カテゴリ
+            </button>
             <button
               onClick={() => supabase.auth.signOut()}
               className="text-xs text-gray-400 hover:text-gray-600"
@@ -330,7 +340,7 @@ export default function App() {
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
             {displayedVideos.map(video => (
-              <VideoCard key={video.id} video={video} onClick={() => setSelectedVideo(video)} />
+              <VideoCard key={video.id} video={video} onClick={() => setSelectedVideo(video)} colorKeys={colorKeys} />
             ))}
           </div>
         )}
@@ -346,8 +356,16 @@ export default function App() {
         </svg>
       </button>
 
+      {showCategoryManager && (
+        <CategoryManagerModal
+          categories={categoryRows}
+          videos={videos}
+          onClose={() => setShowCategoryManager(false)}
+          onChanged={() => { loadCategories(); loadVideos() }}
+        />
+      )}
       {showAddModal && (
-        <AddVideoModal onClose={() => setShowAddModal(false)} onAdded={handleVideoAdded} />
+        <AddVideoModal onClose={() => setShowAddModal(false)} onAdded={handleVideoAdded} categories={categoryNames} />
       )}
       {selectedVideo && (
         <VideoDetailModal
@@ -358,6 +376,7 @@ export default function App() {
             setSelectedVideo(v => ({ ...v, category: cat }))
             loadVideos()
           }}
+          categories={categoryNames}
           onRatingChanged={(rating) => {
             setSelectedVideo(v => ({ ...v, rating }))
             loadVideos()

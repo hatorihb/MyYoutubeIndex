@@ -1,32 +1,4 @@
-const categoryColors = {
-  'AI｜社会・未来': 'bg-sky-100 text-sky-700',
-  'AI｜働き方・変革': 'bg-sky-100 text-sky-800',
-  'AI｜ツール・実践': 'bg-blue-100 text-blue-700',
-  'AI｜モデル・動向': 'bg-indigo-100 text-indigo-700',
-  'AI｜ニュース（TBS）': 'bg-cyan-100 text-cyan-700',
-  'AI｜ニュース（いけとも）': 'bg-cyan-100 text-cyan-800',
-  'AI｜1人起業': 'bg-orange-100 text-orange-600',
-  'フィジカルAI': 'bg-indigo-100 text-indigo-800',
-  'Claude｜全般': 'bg-orange-100 text-orange-700',
-  'Claude｜アプリ開発': 'bg-amber-100 text-amber-800',
-  'Claude｜デザイン': 'bg-yellow-100 text-yellow-700',
-  '科学': 'bg-slate-100 text-slate-700',
-  '育成｜組織・マネジメント': 'bg-purple-100 text-purple-700',
-  '育成｜個人成長': 'bg-violet-100 text-violet-700',
-  'キャリア・自己啓発': 'bg-amber-100 text-amber-700',
-  'リーダーシップ・マネジメント': 'bg-purple-100 text-purple-600',
-  '業務プロセス変革': 'bg-blue-100 text-blue-600',
-  '教養・リベラルアーツ': 'bg-teal-100 text-teal-700',
-  '芸術': 'bg-fuchsia-100 text-fuchsia-700',
-  '人生観・メンタル': 'bg-rose-100 text-rose-600',
-  '時事ネタ': 'bg-gray-100 text-gray-600',
-  '投資': 'bg-green-100 text-green-700',
-  '金融': 'bg-emerald-100 text-emerald-700',
-  '災害': 'bg-red-100 text-red-700',
-  '英会話': 'bg-pink-100 text-pink-700',
-  '宇宙': 'bg-violet-100 text-violet-800',
-  'その他': 'bg-gray-100 text-gray-500',
-}
+import { colorClassFor } from '../lib/categoryColors'
 
 const formatDate = (iso) => {
   if (!iso) return ''
@@ -34,8 +6,8 @@ const formatDate = (iso) => {
   return `${d.getFullYear()}/${String(d.getMonth() + 1).padStart(2, '0')}/${String(d.getDate()).padStart(2, '0')}`
 }
 
-export default function VideoCard({ video, onClick }) {
-  const colorClass = categoryColors[video.category] || 'bg-gray-100 text-gray-600'
+export default function VideoCard({ video, onClick, colorKeys = {} }) {
+  const colorClass = colorClassFor(colorKeys[video.category])
 
   return (
     <button onClick={onClick} className="text-left group w-full">

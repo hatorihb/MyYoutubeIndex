@@ -3,7 +3,9 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-const ALLOWED_CATEGORIES = [
+// DB (public.categories) から取得するのが正。ここは取得に失敗したときの
+// フォールバックで、少なくとも分類が完全に停止しないようにするためのもの。
+const FALLBACK_CATEGORIES = [
   'AI｜社会・未来', 'AI｜働き方・変革', 'AI｜ツール・実践', 'AI｜モデル・動向',
   'AI｜ニュース（TBS）', 'AI｜ニュース（いけとも）', 'AI｜1人起業', 'フィジカルAI',
   'Claude｜全般', 'Claude｜アプリ開発', 'Claude｜デザイン',
@@ -22,12 +24,29 @@ const normalizeCategory = (s: string) =>
     .replace(/[)）]/g, '）')
     .replace(/\s+/g, '')
 
-const CATEGORY_LOOKUP = new Map(ALLOWED_CATEGORIES.map(c => [normalizeCategory(c), c]))
+const buildLookup = (names: string[]) =>
+  new Map(names.map(c => [normalizeCategory(c), c]))
 
 // Never trust the model's raw output: anything off-list becomes その他 so that
 // phantom categories cannot leak into the DB and pollute future few-shot examples.
-const resolveCategory = (raw: unknown): string =>
-  (typeof raw === 'string' ? CATEGORY_LOOKUP.get(normalizeCategory(raw)) : undefined) ?? 'その他'
+const resolveWith = (lookup: Map<string, string>, raw: unknown): string =>
+  (typeof raw === 'string' ? lookup.get(normalizeCategory(raw)) : undefined) ?? 'その他'
+
+type CategoryRow = { name: string; definition: string }
+
+async function fetchCategories(url: string, key: string): Promise<CategoryRow[]> {
+  try {
+    const res = await fetch(
+      `${url}/rest/v1/categories?select=name,definition&order=sort_order`,
+      { headers: { 'Authorization': `Bearer ${key}`, 'apikey': key } }
+    )
+    const rows = await res.json()
+    if (Array.isArray(rows) && rows.length > 0) return rows
+  } catch {
+    // 取得できなければフォールバックを使う
+  }
+  return FALLBACK_CATEGORIES.map(name => ({ name, definition: '' }))
+}
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -42,6 +61,8 @@ Deno.serve(async (req) => {
 
     // Step 2: previewData provided → skip analysis, just save
     if (previewData) {
+      const cats = await fetchCategories(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
+      const lookup = buildLookup(cats.map(c => c.name))
       const dbRes = await fetch(`${SUPABASE_URL}/rest/v1/videos`, {
         method: 'POST',
         headers: {
@@ -50,7 +71,7 @@ Deno.serve(async (req) => {
           'apikey': SUPABASE_SERVICE_ROLE_KEY,
           'Prefer': 'return=representation,resolution=merge-duplicates',
         },
-        body: JSON.stringify({ ...previewData, category: resolveCategory(previewData.category) }),
+        body: JSON.stringify({ ...previewData, category: resolveWith(lookup, previewData.category) }),
       })
       const saved = await dbRes.json()
       return new Response(JSON.stringify(Array.isArray(saved) ? saved[0] : saved), {
@@ -91,6 +112,14 @@ Deno.serve(async (req) => {
     const snippet = ytData.items[0].snippet
     const dbHeaders = { 'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`, 'apikey': SUPABASE_SERVICE_ROLE_KEY }
 
+    // カテゴリ定義はDBが正。アプリ側で追加・変更した内容がそのまま分類に反映される。
+    const categoryRows = await fetchCategories(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
+    const lookup = buildLookup(categoryRows.map(c => c.name))
+    const resolveCategory = (raw: unknown) => resolveWith(lookup, raw)
+    const categoryDefinitions = categoryRows
+      .map(c => `- ${c.name}: ${c.definition || '（説明未設定）'}`)
+      .join('\n')
+
     // Few-shot examples across categories + this channel's own history, fetched together
     const [examplesRes, channelRes] = await Promise.all([
       fetch(
@@ -110,7 +139,7 @@ Deno.serve(async (req) => {
     // on the list are dropped so that pre-existing bad data cannot teach the model.
     const categoryCount = new Map<string, number>()
     const examples = (Array.isArray(examplesData) ? examplesData : []).filter(v => {
-      if (!CATEGORY_LOOKUP.has(normalizeCategory(v.category ?? ''))) return false
+      if (!lookup.has(normalizeCategory(v.category ?? ''))) return false
       const count = categoryCount.get(v.category) ?? 0
       if (count >= 3) return false
       categoryCount.set(v.category, count + 1)
@@ -124,7 +153,7 @@ Deno.serve(async (req) => {
     // Channel prior: some categories (news channels in particular) are decided by
     // the channel alone, so past videos from the same channel are the strongest signal.
     const channelHistory = (Array.isArray(channelData) ? channelData : [])
-      .filter(v => CATEGORY_LOOKUP.has(normalizeCategory(v.category)))
+      .filter(v => lookup.has(normalizeCategory(v.category)))
     const channelTally = new Map<string, number>()
     for (const v of channelHistory) {
       const cat = resolveCategory(v.category)
@@ -161,33 +190,7 @@ Deno.serve(async (req) => {
 説明: ${snippet.description?.substring(0, 1000) || ''}${channelBlock}${examplesBlock}
 
 ## カテゴリ定義
-- AI｜社会・未来: AIが社会・経済・未来に与える影響の考察
-- AI｜働き方・変革: AIによる仕事・働き方の変化
-- AI｜ツール・実践: AI活用の具体的な方法・ツール紹介
-- AI｜モデル・動向: AIモデルの技術解説・業界動向
-- AI｜ニュース（TBS）: TBS CROSS DIGによるAIニュース
-- AI｜ニュース（いけとも）: いけともによるAIニュース
-- AI｜1人起業: AIを使った個人起業・副業
-- フィジカルAI: ロボット・自律システム・AIの物理世界への応用
-- Claude｜全般: Claudeの概要・使い方全般
-- Claude｜アプリ開発: Claudeを使ったアプリ・システム開発
-- Claude｜デザイン: ClaudeのUI/UXデザイン活用
-- 科学: 科学・技術・プログラミング・ソフトウェア開発全般
-- 育成｜組織・マネジメント: チーム・組織の育成・マネジメント
-- 育成｜個人成長: 個人のスキル・能力開発
-- キャリア・自己啓発: キャリア形成・自己成長
-- リーダーシップ・マネジメント: リーダーシップ・経営管理
-- 業務プロセス変革: 業務効率化・DX・プロセス改善
-- 教養・リベラルアーツ: 歴史・哲学・古典・知識教養
-- 芸術: 美術・音楽・映画・文学・建築など、作品や表現そのものの紹介・鑑賞・制作
-- 人生観・メンタル: 人生哲学・メンタル・生き方
-- 時事ネタ: 社会・政治・経済の時事トピック
-- 投資: 株・不動産・資産運用など、自分の資産をどう増やすかの実践
-- 金融: 金利・為替・中央銀行・金融政策・金融業界など、お金の仕組みや市場環境の解説
-- 災害: 防災・災害情報
-- 英会話: 英語学習・英会話・TOEIC等
-- 宇宙: 宇宙科学・天文・宇宙開発・宇宙ビジネス
-- その他: 上記に当てはまらないもの
+${categoryDefinitions}
 
 ## 迷いやすい組み合わせの判断ルール
 - AI｜社会・未来 / AI｜働き方・変革 / 業務プロセス変革:

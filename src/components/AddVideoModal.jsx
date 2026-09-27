@@ -1,18 +1,7 @@
 import { useState } from 'react'
 import { supabase } from '../lib/supabase'
 
-const CATEGORIES = [
-  'AI｜社会・未来', 'AI｜働き方・変革', 'AI｜ツール・実践', 'AI｜モデル・動向',
-  'AI｜ニュース（TBS）', 'AI｜ニュース（いけとも）', 'AI｜1人起業', 'フィジカルAI',
-  'Claude｜全般', 'Claude｜アプリ開発', 'Claude｜デザイン',
-  '科学',
-  '育成｜組織・マネジメント', '育成｜個人成長',
-  'キャリア・自己啓発', 'リーダーシップ・マネジメント', '業務プロセス変革',
-  '教養・リベラルアーツ', '芸術', '人生観・メンタル',
-  '時事ネタ', '投資', '金融', '災害', '英会話', '宇宙', 'その他',
-]
-
-export default function AddVideoModal({ onClose, onAdded }) {
+export default function AddVideoModal({ onClose, onAdded, categories = [] }) {
   const [url, setUrl] = useState('')
   const [pendingFiles, setPendingFiles] = useState([])
   const [loading, setLoading] = useState(false)
@@ -108,7 +97,7 @@ export default function AddVideoModal({ onClose, onAdded }) {
                 className="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-red-400"
                 style={{ fontSize: '16px' }}
               >
-                {CATEGORIES.map(cat => (
+                {categories.map(cat => (
                   <option key={cat} value={cat}>{cat}</option>
                 ))}
               </select>
