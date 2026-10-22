@@ -27,6 +27,10 @@ jobs:
           # Node 20 は 2026-04-30 にサポート終了済み。セキュリティ修正が
           # 提供されないため、現行LTS（2028-04-30まで）を使う。
           node-version: 24
+          # 既定では runner イメージにキャッシュ済みの 24.x が使われ、
+          # セキュリティ修正が入った最新版にならない（例: 2026-10-21 の
+          # 修正版は 24.22.1 だが、キャッシュは 24.21.0 だった）。
+          check-latest: true
       - run: npm install
       - run: npm run build
       - uses: actions/configure-pages@v4
