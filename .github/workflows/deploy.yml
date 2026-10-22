@@ -22,9 +22,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
-          node-version: 20
+          # Node 20 は 2026-04-30 にサポート終了済み。セキュリティ修正が
+          # 提供されないため、現行LTS（2028-04-30まで）を使う。
+          node-version: 24
       - run: npm install
       - run: npm run build
       - uses: actions/configure-pages@v4
