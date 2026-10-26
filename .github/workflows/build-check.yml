@@ -1,0 +1,30 @@
+name: Build check
+
+# プルリクエストでビルドが通ることを確認する。
+#
+# Dependabot の auto-merge（dependabot-automerge.yml）は「他のチェックが
+# すべて通ったらマージする」作りで、チェックが1つも無い場合はマージを
+# 拒否する。このリポジトリでPRに反応していたのは supabase/migrations 配下に
+# パス限定されたワークフローだけだったため、依存更新のPRでは何も走らず
+# auto-merge が成立しなかった。その検証役がこのワークフロー。
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          # runner のキャッシュ版ではなく最新のパッチ版を使う
+          check-latest: true
+
+      # package-lock.json と package.json の整合も同時に検証したいので
+      # install ではなく ci を使う
+      - run: npm ci
+
+      - run: npm run build
