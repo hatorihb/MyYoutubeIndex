@@ -75,3 +75,8 @@ jobs:
 
       - name: Verify access as the authenticated role
         run: psql -v ON_ERROR_STOP=1 -f supabase/tests/authenticated_access.sql
+
+      # Edge Function は service_role で DB を読み書きする。画面側（authenticated）
+      # とは別に権限が要るので、こちらも実際のクエリで確かめる。
+      - name: Verify access as the service_role (Edge Functions)
+        run: psql -v ON_ERROR_STOP=1 -f supabase/tests/service_role_access.sql

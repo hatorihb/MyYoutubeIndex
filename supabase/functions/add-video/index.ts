@@ -68,7 +68,11 @@ const FALLBACK_RULES = `- AI｜社会・未来 / AI｜働き方・変革 / 業�
 
 type CategoryRow = { name: string; definition: string }
 
-async function fetchCategories(url: string, key: string): Promise<CategoryRow[]> {
+// 取得できなければ null を返し、理由をログに残す。呼び出し側がフォールバックの
+// 要否を決める。以前はここで黙って FALLBACK_CATEGORIES に切り替えていたため、
+// service_role に権限が無いことに気づけず、画面で追加したカテゴリが
+// 保存時に「その他」へ書き換えられていた。
+async function fetchCategories(url: string, key: string): Promise<CategoryRow[] | null> {
   try {
     const res = await fetch(
       `${url}/rest/v1/categories?select=name,definition&order=sort_order`,
@@ -76,10 +80,11 @@ async function fetchCategories(url: string, key: string): Promise<CategoryRow[]>
     )
     const rows = await res.json()
     if (Array.isArray(rows) && rows.length > 0) return rows
-  } catch {
-    // 取得できなければフォールバックを使う
+    console.error('categories を取得できませんでした', res.status, JSON.stringify(rows))
+  } catch (err) {
+    console.error('categories の取得で例外', err)
   }
-  return FALLBACK_CATEGORIES.map(name => ({ name, definition: '' }))
+  return null
 }
 
 // 取得できなければ null を返す。空配列（=ルールを意図的に0件にした状態）と区別するため。
@@ -90,10 +95,14 @@ async function fetchRules(url: string, key: string): Promise<string | null> {
       { headers: { 'Authorization': `Bearer ${key}`, 'apikey': key } }
     )
     const rows = await res.json()
-    if (!Array.isArray(rows)) return null
+    if (!Array.isArray(rows)) {
+      console.error('category_rules を取得できませんでした', res.status, JSON.stringify(rows))
+      return null
+    }
     if (rows.length === 0) return ''
     return rows.map((r: { title: string; body: string }) => `- ${r.title}:\n  ${r.body}`).join('\n')
-  } catch {
+  } catch (err) {
+    console.error('category_rules の取得で例外', err)
     return null
   }
 }
@@ -111,8 +120,13 @@ Deno.serve(async (req) => {
 
     // Step 2: previewData provided → skip analysis, just save
     if (previewData) {
+      // ユーザーが選んだカテゴリ。一覧が取れれば表記ゆれを正規化し、一覧に無い
+      // ものは「その他」に寄せる。取れなければ書き換えずにそのまま渡す
+      // （videos.category の外部キーが存在しないカテゴリを弾くので安全）。
       const cats = await fetchCategories(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
-      const lookup = buildLookup(cats.map(c => c.name))
+      const category = cats
+        ? resolveWith(buildLookup(cats.map(c => c.name)), previewData.category)
+        : previewData.category
       const dbRes = await fetch(`${SUPABASE_URL}/rest/v1/videos`, {
         method: 'POST',
         headers: {
@@ -121,9 +135,17 @@ Deno.serve(async (req) => {
           'apikey': SUPABASE_SERVICE_ROLE_KEY,
           'Prefer': 'return=representation,resolution=merge-duplicates',
         },
-        body: JSON.stringify({ ...previewData, category: resolveWith(lookup, previewData.category) }),
+        body: JSON.stringify({ ...previewData, category }),
       })
       const saved = await dbRes.json()
+      // 失敗時に PostgREST のエラー本文を「保存できた動画」として返さない
+      if (!dbRes.ok) {
+        console.error('videos への保存に失敗', dbRes.status, JSON.stringify(saved))
+        return new Response(JSON.stringify({ error: `保存に失敗しました: ${saved?.message ?? dbRes.status}` }), {
+          status: 500,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        })
+      }
       return new Response(JSON.stringify(Array.isArray(saved) ? saved[0] : saved), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       })
@@ -163,7 +185,9 @@ Deno.serve(async (req) => {
     const dbHeaders = { 'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`, 'apikey': SUPABASE_SERVICE_ROLE_KEY }
 
     // カテゴリ定義はDBが正。アプリ側で追加・変更した内容がそのまま分類に反映される。
+    // 分析は止めたくないので、取得できなければ従来の一覧で続行する（理由はログ済み）
     const categoryRows = await fetchCategories(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
+      ?? FALLBACK_CATEGORIES.map(name => ({ name, definition: '' }))
     const lookup = buildLookup(categoryRows.map(c => c.name))
     const resolveCategory = (raw: unknown) => resolveWith(lookup, raw)
     const categoryDefinitions = categoryRows
