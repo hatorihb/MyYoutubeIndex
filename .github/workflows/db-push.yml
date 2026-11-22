@@ -25,6 +25,9 @@ on:
     branches: [main]
     paths:
       - 'supabase/migrations/**'
+      # ワークフロー自体を直したときにも再実行する。db push は未適用分だけを
+      # 流すので、何度実行しても安全。
+      - '.github/workflows/db-push.yml'
   workflow_dispatch:
     inputs:
       action:
@@ -82,7 +85,8 @@ jobs:
       # main にマージされたら実際に適用する
       - name: Apply migrations
         if: github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.action == 'push')
-        run: supabase db push --db-url "$DB_URL"
+        # CLI は非対話環境では確認を求めて止まるため --yes で承認する
+        run: supabase db push --db-url "$DB_URL" --yes
 
       # 初回移行用: 手作業で適用済みのマイグレーションを「適用済み」として履歴に記録する。
       # これをしないと db push が既に流したものを再実行しようとする。
@@ -100,6 +104,6 @@ jobs:
           fi
           echo "適用済みとして記録します: $versions"
           # shellcheck disable=SC2086
-          supabase migration repair --status applied --db-url "$DB_URL" $versions
+          supabase migration repair --status applied --db-url "$DB_URL" --yes $versions
           echo "── 記録後の状態 ──"
           supabase migration list --db-url "$DB_URL"
