@@ -62,7 +62,7 @@ jobs:
               break
             fi
             if [ "$total" -eq 0 ] && [ "$SECONDS" -ge "$grace" ]; then
-              echo "::error::No other checks ran on this PR, so nothing verified the update — not merging. Add CI to this repo, or review and merge manually."
+              echo "::error::No other checks ran on this PR, so nothing verified the update — not merging. Add CI to this repo (HarnessEngineering: ./install.sh add . --with ci), or review and merge manually."
               exit 1
             fi
             if [ "$SECONDS" -ge "$deadline" ]; then
